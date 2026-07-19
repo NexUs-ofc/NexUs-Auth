@@ -1,0 +1,50 @@
+spring:
+  config:
+    import: optional:file:src/main/resources/.env.properties
+  application:
+    name: NexUs-Auth
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      repositories:
+        enabled: false
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+app:
+  auth:
+    issuer: ${JWT_ISSUER:nexus-auth}
+    jwt-secret-base64: ${JWT_SECRET_BASE64}
+    access-token-ttl: ${ACCESS_TOKEN_TTL:15m}
+    refresh-token-ttl: ${REFRESH_TOKEN_TTL:30d}
+    registration-ttl: ${REGISTRATION_TTL:15m}
+    otp-ttl: ${OTP_TTL:10m}
+  firebase:
+    enabled: ${FIREBASE_ENABLED:false}
+    credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+  mail:
+    from: ${MAIL_FROM}
+
+server:
+  error:
+    include-message: never
