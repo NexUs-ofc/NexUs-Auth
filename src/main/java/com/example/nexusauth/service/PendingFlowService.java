@@ -5,6 +5,7 @@ import com.example.nexusauth.model.RegistrationData;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,9 +41,11 @@ public class PendingFlowService {
     public RegistrationData verifyRegistration(String id, String otp) {
         String payload = redis.opsForValue().get(registrationKey(id));
         if (payload == null) throw new InvalidOrExpiredOtpException();
-        int attempts = incrementAttempts("auth:registration-attempts:" + id);
+        String attemptsKey = "auth:registration-attempts:" + id;
+        int attempts = incrementAttempts(attemptsKey, properties.registrationTtl());
         if (attempts > 5) {
             redis.delete(registrationKey(id));
+            redis.delete(attemptsKey);
             throw new InvalidOrExpiredOtpException();
         }
         PendingRegistration pending = fromJson(payload, PendingRegistration.class);
@@ -82,17 +85,23 @@ public class PendingFlowService {
     public long verifyPasswordReset(String id, String otp) {
         String payload = redis.opsForValue().get(resetKey(id));
         if (payload == null) throw new InvalidOrExpiredOtpException();
-        int attempts = incrementAttempts("auth:reset-attempts:" + id);
+        String attemptsKey = "auth:reset-attempts:" + id;
+        int attempts = incrementAttempts(attemptsKey, properties.otpTtl());
+        if (attempts > 5) {
+            redis.delete(resetKey(id));
+            redis.delete(attemptsKey);
+            throw new InvalidOrExpiredOtpException();
+        }
         PendingReset pending = fromJson(payload, PendingReset.class);
-        if (attempts > 5 || !encoder.matches(otp, pending.otpHash())) throw new InvalidOrExpiredOtpException();
+        if (!encoder.matches(otp, pending.otpHash())) throw new InvalidOrExpiredOtpException();
         redis.delete(resetKey(id));
-        redis.delete("auth:reset-attempts:" + id);
+        redis.delete(attemptsKey);
         return pending.profileId();
     }
 
-    private int incrementAttempts(String key) {
+    private int incrementAttempts(String key, Duration ttl) {
         Long attempts = redis.opsForValue().increment(key);
-        redis.expire(key, properties.otpTtl());
+        redis.expire(key, ttl);
         return attempts == null ? 1 : attempts.intValue();
     }
 
