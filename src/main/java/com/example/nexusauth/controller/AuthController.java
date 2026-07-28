@@ -84,7 +84,7 @@ public class AuthController {
     public ResponseEntity<AuthDtos.PendingResponse> startFirebaseRegistration(
             @RequestBody @Valid AuthDtos.FirebaseRegistrationStartRequest request) {
 
-        logger.info("Tentativa de cadastro pelo ticket {}", request.firebaseTicket());
+        logger.info("Tentativa de cadastro pelo ticket", request.firebaseTicket());
 
         return ResponseEntity.accepted().body(
                 new AuthDtos.PendingResponse(
@@ -106,7 +106,7 @@ public class AuthController {
     @PostMapping("/token/refresh")
     public SessionResponse refresh(@RequestBody @Valid AuthDtos.RefreshRequest request) {
 
-        logger.info("Atualização de token {}, renova sessão", request.refreshToken());
+        logger.info("Atualização de token, renova sessão", request.refreshToken());
 
         return sessionResponse(
                 sessions.refresh(request.refreshToken()
@@ -121,7 +121,7 @@ public class AuthController {
             @RequestBody @Valid AuthDtos.LogoutRequest request
     ) {
 
-        logger.info("Logout realizado com token {}", request.refreshToken());
+        logger.info("Logout realizado com token", request.refreshToken());
 
         logout.logout(jwt, request.refreshToken());
 
@@ -132,7 +132,7 @@ public class AuthController {
     public ResponseEntity<AuthDtos.PasswordResetPendingResponse> forgotPassword(
             @RequestBody @Valid AuthDtos.ForgotPasswordRequest request) {
 
-        logger.info("Tentativa de recuperação de senha para email {}", request.email());
+        logger.info("Tentativa de recuperação de senha para email", request.email());
 
         return ResponseEntity.accepted().body(
                 new AuthDtos.PasswordResetPendingResponse(
@@ -143,7 +143,7 @@ public class AuthController {
     @PostMapping("/password/reset")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid AuthDtos.ResetPasswordRequest request) {
 
-        logger.info("Atualização de senha com ID {} concluída!", request.resetId());
+        logger.info("Atualização de senha com concluída!", request.resetId());
 
         auth.resetPassword(request);
         return ResponseEntity.noContent().build();
