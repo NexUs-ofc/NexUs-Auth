@@ -63,7 +63,10 @@ public class SecurityConfig {
                                 "/api/auth/firebase/**",
                                 "/api/auth/token/refresh",
                                 "/api/auth/password/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(decoder)
