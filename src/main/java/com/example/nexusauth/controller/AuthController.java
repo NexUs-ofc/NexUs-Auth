@@ -24,13 +24,13 @@ public class AuthController {
     private final AuthService auth;
     private final SessionService sessions;
     private final LogoutService logout;
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public AuthController(AuthService auth, SessionService sessions, LogoutService logout, Logger logger) {
+    public AuthController(AuthService auth, SessionService sessions, LogoutService logout) {
         this.auth = auth;
         this.sessions = sessions;
         this.logout = logout;
-        this.logger = LoggerFactory.getLogger(AuthController.class);
+
     }
 
     @PostMapping("/registrations/password/start")
