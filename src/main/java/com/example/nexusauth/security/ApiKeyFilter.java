@@ -10,6 +10,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -18,12 +20,15 @@ import java.util.Collections;
 public class ApiKeyFilter extends OncePerRequestFilter {
 
     private static final String API_KEY_HEADER = "X-API-KEY";
+    public static final Logger logger = LoggerFactory.getLogger(ApiKeyFilter.class);
 
     private final String apiKey;
 
     public ApiKeyFilter(@Value("${app.api-key}") String apiKey) {
         this.apiKey = apiKey;
     }
+
+
 
     @Override
     protected void doFilterInternal(
@@ -33,6 +38,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String requestApiKey = request.getHeader(API_KEY_HEADER);
+
+        logger.info("Chave de API extraída do ENV: {}", apiKey);
+        logger.info("Chave de API fornecida: {}", requestApiKey);
 
         String path = request.getRequestURI();
 
