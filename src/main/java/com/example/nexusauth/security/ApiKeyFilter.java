@@ -39,8 +39,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
         String requestApiKey = request.getHeader(API_KEY_HEADER);
 
-        logger.info("Chave de API extraída do ENV: {}", apiKey);
-        logger.info("Chave de API fornecida: {}", requestApiKey);
 
         String path = request.getRequestURI();
 
