@@ -20,14 +20,13 @@ public class FirebaseIdentityService {
         FirebaseAuth auth = firebaseAuth.getIfAvailable();
         if (auth == null) throw new FirebaseUnavailableException();
         try {
-            FirebaseToken token = auth.verifyIdToken(idToken);
+            FirebaseToken token = auth.verifyIdToken(idToken, true);
             if (token.getEmail() == null || !token.isEmailVerified()) throw new UnverifiedEmailException();
             Object firebaseClaim = token.getClaims().get("firebase");
             String signInProvider = firebaseClaim instanceof Map<?, ?> map
                     ? String.valueOf(map.get("sign_in_provider")) : "";
             AuthProvider provider = switch (signInProvider) {
                 case "google.com" -> AuthProvider.GOOGLE;
-                case "microsoft.com" -> AuthProvider.MICROSOFT;
                 default -> throw new UnsupportedProviderException();
             };
             return new Identity(token.getUid(), token.getEmail(), token.getName(), token.getPicture(), provider);
