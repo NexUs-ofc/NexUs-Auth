@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.example.nexusauth.dto.AuthDtos;
+import com.example.nexusauth.dto.address.AddressRequest;
+import com.example.nexusauth.dto.password.PasswordLoginRequest;
+import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.model.AuthMethod;
 import com.example.nexusauth.model.AuthProvider;
 import com.example.nexusauth.model.Channel;
@@ -42,9 +44,9 @@ class AuthServiceTest {
 
     @Test
     void rejectsAdminFromPublicRegistration() {
-        var request = new AuthDtos.PasswordRegistrationStartRequest(ProfileType.ADMIN, "admin@example.com",
+        var request = new PasswordRegistrationStartRequest(ProfileType.ADMIN, "admin@example.com",
                 "password123", "Admin", java.util.List.of("+5511999999999"),
-                new AuthDtos.AddressRequest("Centro", "Rua A", "1", "01001000", "São Paulo", "SP"),
+                new AddressRequest("Centro", "Rua A", "1", "01001000", "São Paulo", "SP"),
                 null, null, null);
 
         assertThatThrownBy(() -> service.startPasswordRegistration(request))
@@ -59,7 +61,7 @@ class AuthServiceTest {
                 new AuthMethod(1, AuthProvider.PASSWORD, "hash")));
         when(encoder.matches("password123", "hash")).thenReturn(true);
 
-        var request = new AuthDtos.PasswordLoginRequest("user@example.com", "password123", Channel.PLATFORM);
+        var request = new PasswordLoginRequest("user@example.com", "password123", Channel.PLATFORM);
         assertThatThrownBy(() -> service.passwordLogin(request))
                 .isInstanceOf(AuthService.ChannelForbiddenException.class);
     }
@@ -72,7 +74,7 @@ class AuthServiceTest {
                 new AuthMethod(1, AuthProvider.PASSWORD, "hash")));
         when(encoder.matches("wrong-password", "hash")).thenReturn(false);
 
-        var request = new AuthDtos.PasswordLoginRequest("user@example.com", "wrong-password", Channel.MOBILE);
+        var request = new PasswordLoginRequest("user@example.com", "wrong-password", Channel.MOBILE);
         assertThatThrownBy(() -> service.passwordLogin(request))
                 .isInstanceOf(AuthService.InvalidCredentialsException.class);
     }
@@ -85,7 +87,7 @@ class AuthServiceTest {
                 new AuthMethod(1, AuthProvider.PASSWORD, "hash")));
         when(encoder.matches("password123", "hash")).thenReturn(true);
 
-        var request = new AuthDtos.PasswordLoginRequest("user@example.com", "password123", Channel.MOBILE);
+        var request = new PasswordLoginRequest("user@example.com", "password123", Channel.MOBILE);
         assertThatThrownBy(() -> service.passwordLogin(request))
                 .isInstanceOf(AuthService.ProfileUnavailableException.class);
     }

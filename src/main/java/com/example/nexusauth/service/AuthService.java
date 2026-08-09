@@ -1,7 +1,14 @@
 package com.example.nexusauth.service;
 
-import com.example.nexusauth.dto.AuthDtos;
-import com.example.nexusauth.dto.SessionResponse;
+import com.example.nexusauth.dto.address.AddressRequest;
+import com.example.nexusauth.dto.auth.FirebaseAuthenticateRequest;
+import com.example.nexusauth.dto.auth.FirebaseAuthenticateResponse;
+import com.example.nexusauth.dto.registration.FirebaseRegistrationRequiredResponse;
+import com.example.nexusauth.dto.registration.FirebaseRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
+import com.example.nexusauth.dto.password.PasswordLoginRequest;
+import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.session.SessionResponse;
 import com.example.nexusauth.model.AddressData;
 import com.example.nexusauth.model.AuthMethod;
 import com.example.nexusauth.model.AuthProvider;
@@ -51,7 +58,7 @@ public class AuthService {
         this.plans = plans;
     }
 
-    public String startPasswordRegistration(AuthDtos.PasswordRegistrationStartRequest request) {
+    public String startPasswordRegistration(PasswordRegistrationStartRequest request) {
         validatePublicType(request.type());
         ensureEmailAvailable(request.email());
         validateCompany(request.type(), request.cnpj(), request.planId());
@@ -71,7 +78,7 @@ public class AuthService {
         return sessions.issue(profile);
     }
 
-    public SessionService.Session passwordLogin(AuthDtos.PasswordLoginRequest request) {
+    public SessionService.Session passwordLogin(PasswordLoginRequest request) {
         Profile profile = profiles.findByEmailIgnoreCase(request.email()).orElseThrow(InvalidCredentialsException::new);
         AuthMethod method = authMethods.findByProfileIdAndProvider(profile.id(), AuthProvider.PASSWORD)
                 .orElseThrow(InvalidCredentialsException::new);
@@ -80,7 +87,7 @@ public class AuthService {
         return sessions.issue(profile);
     }
 
-    public AuthDtos.FirebaseAuthenticateResponse firebaseAuthenticate(AuthDtos.FirebaseAuthenticateRequest request) {
+    public FirebaseAuthenticateResponse firebaseAuthenticate(FirebaseAuthenticateRequest request) {
         FirebaseIdentityService.Identity identity = firebase.verify(request.idToken());
         return authMethods.findByProviderAndCredential(identity.provider(), identity.uid())
                 .map(method -> {
@@ -89,18 +96,18 @@ public class AuthService {
                     SessionService.Session session = sessions.issue(profile);
                     SessionResponse response = new SessionResponse(session.accessToken(), session.accessTokenExpiresAt(),
                             session.refreshToken(), session.refreshTokenExpiresAt());
-                    return new AuthDtos.FirebaseAuthenticateResponse(false, response, null);
+                    return new FirebaseAuthenticateResponse(false, response, null);
                 })
                 .orElseGet(() -> {
                     if (profiles.findByEmailIgnoreCase(identity.email()).isPresent()) throw new AccountRequiresLinkException();
                     String ticket = pendingFlows.saveFirebaseTicket(identity);
-                    var registration = new AuthDtos.FirebaseRegistrationRequiredResponse(ticket, identity.email(),
+                    var registration = new FirebaseRegistrationRequiredResponse(ticket, identity.email(),
                             identity.name(), identity.picture(), List.of("type", "phones", "address", "cnpj/company", "planId/company"));
-                    return new AuthDtos.FirebaseAuthenticateResponse(true, null, registration);
+                    return new FirebaseAuthenticateResponse(true, null, registration);
                 });
     }
 
-    public String startFirebaseRegistration(AuthDtos.FirebaseRegistrationStartRequest request) {
+    public String startFirebaseRegistration(FirebaseRegistrationStartRequest request) {
         FirebaseIdentityService.Identity identity = pendingFlows.getFirebaseTicket(request.firebaseTicket());
         validatePublicType(request.type());
         ensureEmailAvailable(identity.email());
@@ -123,7 +130,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void resetPassword(AuthDtos.ResetPasswordRequest request) {
+    public void resetPassword(ResetPasswordRequest request) {
         long profileId = pendingFlows.verifyPasswordReset(request.resetId(), request.otp());
         AuthMethod password = authMethods.findByProfileIdAndProvider(Math.toIntExact(profileId), AuthProvider.PASSWORD)
                 .orElseThrow(() -> new IllegalStateException("Perfil não possui autenticação por senha"));
@@ -174,7 +181,7 @@ public class AuthService {
     }
 
     private String normalizeEmail(String email) { return email.trim().toLowerCase(Locale.ROOT); }
-    private AddressData address(AuthDtos.AddressRequest value) {
+    private AddressData address(AddressRequest value) {
         return new AddressData(value.neighborhood(), value.street(), value.number(), value.cep(), value.city(), value.state());
     }
 

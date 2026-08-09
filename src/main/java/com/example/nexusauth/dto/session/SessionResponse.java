@@ -1,4 +1,4 @@
-package com.example.nexusauth.dto;
+package com.example.nexusauth.dto.session;
 
 import java.time.Instant;
 
