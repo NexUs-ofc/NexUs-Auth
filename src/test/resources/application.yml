@@ -1,0 +1,30 @@
+spring:
+  main:
+    lazy-initialization: true
+  datasource:
+    url: jdbc:postgresql://localhost:1/nexus_auth_test
+    username: test
+    password: test
+  flyway:
+    enabled: false
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.boot.allow_jdbc_metadata_access: false
+
+app:
+  auth:
+    issuer: nexus-auth-test
+    jwt-secret-base64: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    access-token-ttl: 15m
+    refresh-token-ttl: 30d
+    registration-ttl: 15m
+    otp-ttl: 10m
+  firebase:
+    enabled: false
+    credentials-path: ""
+  mail:
+    from: no-reply@example.com
