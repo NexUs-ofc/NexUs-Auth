@@ -49,7 +49,7 @@ public class FirebaseIdentityService {
         try {
 
             FirebaseToken token =
-                    auth.verifyIdToken(idToken);
+                    auth.verifyIdToken(idToken, true);
 
             logger.debug(
                     "Token Firebase validado com sucesso uid={}",
@@ -89,9 +89,6 @@ public class FirebaseIdentityService {
                     switch (signInProvider) {
                         case "google.com" ->
                                 AuthProvider.GOOGLE;
-
-                        case "microsoft.com" ->
-                                AuthProvider.MICROSOFT;
 
                         default -> {
 

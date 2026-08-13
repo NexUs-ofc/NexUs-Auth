@@ -1,7 +1,19 @@
 package com.example.nexusauth.controller;
 
-import com.example.nexusauth.dto.AuthDtos;
-import com.example.nexusauth.dto.SessionResponse;
+import com.example.nexusauth.dto.auth.FirebaseAuthenticateRequest;
+import com.example.nexusauth.dto.auth.FirebaseAuthenticateResponse;
+import com.example.nexusauth.dto.auth.LinkFirebaseRequest;
+import com.example.nexusauth.dto.otp.VerifyOtpRequest;
+import com.example.nexusauth.dto.password.ForgotPasswordRequest;
+import com.example.nexusauth.dto.password.PasswordLoginRequest;
+import com.example.nexusauth.dto.password.PasswordResetPendingResponse;
+import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.registration.FirebaseRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.PendingResponse;
+import com.example.nexusauth.dto.session.SessionResponse;
+import com.example.nexusauth.dto.token.LogoutRequest;
+import com.example.nexusauth.dto.token.RefreshRequest;
 import com.example.nexusauth.service.AuthService;
 import com.example.nexusauth.service.LogoutService;
 import com.example.nexusauth.service.SessionService;
@@ -34,20 +46,20 @@ public class AuthController {
     }
 
     @PostMapping("/registrations/password/start")
-    public ResponseEntity<AuthDtos.PendingResponse> startPasswordRegistration(
-            @RequestBody @Valid AuthDtos.PasswordRegistrationStartRequest request) {
+    public ResponseEntity<PendingResponse> startPasswordRegistration(
+            @RequestBody @Valid PasswordRegistrationStartRequest request) {
 
         logger.info("Tentativa de cadastro por {}", request.email());
 
         return ResponseEntity.accepted().body(
-                new AuthDtos.PendingResponse(
+                new PendingResponse(
                         auth.startPasswordRegistration(request)
                 )
         );
     }
 
     @PostMapping("/registrations/password/verify")
-    public SessionResponse verifyPasswordRegistration(@RequestBody @Valid AuthDtos.VerifyOtpRequest request) {
+    public SessionResponse verifyPasswordRegistration(@RequestBody @Valid VerifyOtpRequest request) {
 
         logger.info("Verificação de duas etapas para cadastro realizada");
 
@@ -57,7 +69,7 @@ public class AuthController {
     }
 
     @PostMapping("/login/password")
-    public SessionResponse passwordLogin(@RequestBody @Valid AuthDtos.PasswordLoginRequest request) {
+    public SessionResponse passwordLogin(@RequestBody @Valid PasswordLoginRequest request) {
 
         logger.info("Tentativa de login por {} em {}", request.email(), request.channel());
 
@@ -67,34 +79,34 @@ public class AuthController {
     }
 
     @PostMapping("/firebase/authenticate")
-    public ResponseEntity<AuthDtos.FirebaseAuthenticateResponse> firebaseAuthenticate(
-            @RequestBody @Valid AuthDtos.FirebaseAuthenticateRequest request) {
+    public ResponseEntity<FirebaseAuthenticateResponse> firebaseAuthenticate(
+            @RequestBody @Valid FirebaseAuthenticateRequest request) {
 
         logger.info("Tentativa de login por autenticação firebase com email");
 
-        AuthDtos.FirebaseAuthenticateResponse response = auth.firebaseAuthenticate(request);
+        FirebaseAuthenticateResponse response = auth.firebaseAuthenticate(request);
 
         return ResponseEntity.status(
-                response.registrationRequired() ? HttpStatus.PRECONDITION_REQUIRED : HttpStatus.OK
+                        response.registrationRequired() ? HttpStatus.PRECONDITION_REQUIRED : HttpStatus.OK
                 )
                 .body(response);
     }
 
     @PostMapping("/registrations/firebase/start")
-    public ResponseEntity<AuthDtos.PendingResponse> startFirebaseRegistration(
-            @RequestBody @Valid AuthDtos.FirebaseRegistrationStartRequest request) {
+    public ResponseEntity<PendingResponse> startFirebaseRegistration(
+            @RequestBody @Valid FirebaseRegistrationStartRequest request) {
 
         logger.info("Tentativa de cadastro pelo ticket", request.firebaseTicket());
 
         return ResponseEntity.accepted().body(
-                new AuthDtos.PendingResponse(
+                new PendingResponse(
                         auth.startFirebaseRegistration(request)
                 )
         );
     }
 
     @PostMapping("/registrations/firebase/verify")
-    public SessionResponse verifyFirebaseRegistration(@RequestBody @Valid AuthDtos.VerifyOtpRequest request) {
+    public SessionResponse verifyFirebaseRegistration(@RequestBody @Valid VerifyOtpRequest request) {
 
         logger.info("Verificação de duas etapas para cadastro por firebase realizada!");
 
@@ -104,7 +116,7 @@ public class AuthController {
     }
 
     @PostMapping("/token/refresh")
-    public SessionResponse refresh(@RequestBody @Valid AuthDtos.RefreshRequest request) {
+    public SessionResponse refresh(@RequestBody @Valid RefreshRequest request) {
 
         logger.info("Atualização de token, renova sessão", request.refreshToken());
 
@@ -118,7 +130,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody @Valid AuthDtos.LogoutRequest request
+            @RequestBody @Valid LogoutRequest request
     ) {
 
         logger.info("Logout realizado com token", request.refreshToken());
@@ -129,19 +141,19 @@ public class AuthController {
     }
 
     @PostMapping("/password/forgot")
-    public ResponseEntity<AuthDtos.PasswordResetPendingResponse> forgotPassword(
-            @RequestBody @Valid AuthDtos.ForgotPasswordRequest request) {
+    public ResponseEntity<PasswordResetPendingResponse> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequest request) {
 
         logger.info("Tentativa de recuperação de senha para email", request.email());
 
         return ResponseEntity.accepted().body(
-                new AuthDtos.PasswordResetPendingResponse(
+                new PasswordResetPendingResponse(
                         auth.startPasswordReset(request.email())
                 ));
     }
 
     @PostMapping("/password/reset")
-    public ResponseEntity<Void> resetPassword(@RequestBody @Valid AuthDtos.ResetPasswordRequest request) {
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
 
         logger.info("Atualização de senha com concluída!", request.resetId());
 
@@ -152,7 +164,7 @@ public class AuthController {
     @PostMapping("/firebase/link")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> linkFirebase(@AuthenticationPrincipal Jwt jwt,
-                                             @RequestBody @Valid AuthDtos.LinkFirebaseRequest request) {
+                                             @RequestBody @Valid LinkFirebaseRequest request) {
 
         logger.info("Criação de link firebase para autenticação automática");
 

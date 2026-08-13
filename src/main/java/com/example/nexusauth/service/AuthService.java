@@ -1,8 +1,14 @@
-
 package com.example.nexusauth.service;
 
-import com.example.nexusauth.dto.AuthDtos;
-import com.example.nexusauth.dto.SessionResponse;
+import com.example.nexusauth.dto.address.AddressRequest;
+import com.example.nexusauth.dto.auth.FirebaseAuthenticateRequest;
+import com.example.nexusauth.dto.auth.FirebaseAuthenticateResponse;
+import com.example.nexusauth.dto.registration.FirebaseRegistrationRequiredResponse;
+import com.example.nexusauth.dto.registration.FirebaseRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
+import com.example.nexusauth.dto.password.PasswordLoginRequest;
+import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.session.SessionResponse;
 import com.example.nexusauth.model.AddressData;
 import com.example.nexusauth.model.AuthMethod;
 import com.example.nexusauth.model.AuthProvider;
@@ -58,7 +64,7 @@ public class AuthService {
         this.plans = plans;
     }
 
-    public String startPasswordRegistration(AuthDtos.PasswordRegistrationStartRequest request) {
+    public String startPasswordRegistration(PasswordRegistrationStartRequest request) {
 
         logger.info(
                 "Iniciando cadastro por senha para email={} tipo={}",
@@ -145,7 +151,7 @@ public class AuthService {
     }
 
     public SessionService.Session passwordLogin(
-            AuthDtos.PasswordLoginRequest request
+            PasswordLoginRequest request
     ) {
 
         logger.info(
@@ -208,8 +214,8 @@ public class AuthService {
         return session;
     }
 
-    public AuthDtos.FirebaseAuthenticateResponse firebaseAuthenticate(
-            AuthDtos.FirebaseAuthenticateRequest request
+    public FirebaseAuthenticateResponse firebaseAuthenticate(
+            FirebaseAuthenticateRequest request
     ) {
 
         logger.info(
@@ -267,7 +273,7 @@ public class AuthService {
                             request.channel()
                     );
 
-                    return new AuthDtos.FirebaseAuthenticateResponse(
+                    return new FirebaseAuthenticateResponse(
                             false,
                             response,
                             null
@@ -302,7 +308,7 @@ public class AuthService {
                     );
 
                     var registration =
-                            new AuthDtos.FirebaseRegistrationRequiredResponse(
+                            new FirebaseRegistrationRequiredResponse(
                                     ticket,
                                     identity.email(),
                                     identity.name(),
@@ -316,7 +322,7 @@ public class AuthService {
                                     )
                             );
 
-                    return new AuthDtos.FirebaseAuthenticateResponse(
+                    return new FirebaseAuthenticateResponse(
                             true,
                             null,
                             registration
@@ -325,7 +331,7 @@ public class AuthService {
     }
 
     public String startFirebaseRegistration(
-            AuthDtos.FirebaseRegistrationStartRequest request
+            FirebaseRegistrationStartRequest request
     ) {
 
         logger.info(
@@ -431,7 +437,7 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(
-            AuthDtos.ResetPasswordRequest request
+            ResetPasswordRequest request
     ) {
 
         logger.info(
@@ -642,7 +648,7 @@ public class AuthService {
     }
 
     private AddressData address(
-            AuthDtos.AddressRequest value
+            AddressRequest value
     ) {
         return new AddressData(
                 value.neighborhood(),
@@ -688,4 +694,3 @@ public class AuthService {
         }
     }
 }
-
