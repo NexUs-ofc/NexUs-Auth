@@ -63,7 +63,7 @@ public class AuthService {
         ensureEmailAvailable(request.email());
         validateCompany(request.type(), request.cnpj(), request.planId());
         RegistrationData data = new RegistrationData(request.type(), normalizeEmail(request.email()), request.name(),
-                request.phones(), address(request.address()), request.profileImageUrl(), request.cnpj(), request.planId(),
+                request.phones(), address(request.type(), request.address()), request.profileImageUrl(), request.cnpj(), request.planId(),
                 AuthProvider.PASSWORD, passwordEncoder.encode(request.password()));
         return pendingFlows.startRegistration(data);
     }
@@ -115,7 +115,7 @@ public class AuthService {
         String name = request.name() == null || request.name().isBlank() ? identity.name() : request.name();
         if (name == null || name.isBlank()) throw new InvalidRegistrationException("Nome é obrigatório");
         RegistrationData data = new RegistrationData(request.type(), normalizeEmail(identity.email()), name,
-                request.phones(), address(request.address()), identity.picture(), request.cnpj(), request.planId(),
+                request.phones(), address(request.type(), request.address()), identity.picture(), request.cnpj(), request.planId(),
                 identity.provider(), identity.uid());
         String registrationId = pendingFlows.startRegistration(data);
         pendingFlows.deleteFirebaseTicket(request.firebaseTicket());
@@ -181,8 +181,21 @@ public class AuthService {
     }
 
     private String normalizeEmail(String email) { return email.trim().toLowerCase(Locale.ROOT); }
-    private AddressData address(AddressRequest value) {
-        return new AddressData(value.neighborhood(), value.street(), value.number(), value.cep(), value.city(), value.state());
+    private AddressData address(ProfileType type, AddressRequest value) {
+        if (value == null) {
+            if (type == ProfileType.HOUSEHOLD) {
+                throw new InvalidRegistrationException(
+                        "Endereço é obrigatório para HOUSEHOLD");
+            }
+            return null;
+        }
+        return new AddressData(
+                value.neighborhood(),
+                value.street(),
+                value.number(),
+                value.cep(),
+                value.city(),
+                value.state());
     }
 
     public static class InvalidCredentialsException extends RuntimeException {}
