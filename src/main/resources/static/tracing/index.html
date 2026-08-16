@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+    <meta charset="UTF-8">
+    <title>NexUs Auth Tracing</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<header>
+
+    <h1>NexUs Auth</h1>
+    <p>Métricas de Observabilidade</p>
+
+</header>
+
+<main class="cards">
+
+    <div class="card" data-metrica="cpu">
+        <h2>CPU</h2>
+        <span id="cpu">-- %</span>
+    </div>
+
+    <div class="card" data-metrica="memory">
+        <h2>Memória JVM</h2>
+        <span id="memory">-- MB</span>
+    </div>
+
+    <div class="card" data-metrica="threads">
+        <h2>Threads</h2>
+        <span id="threads">--</span>
+    </div>
+
+    <div class="card" data-metrica="requests">
+        <h2>Requests</h2>
+        <span id="requests">--</span>
+    </div>
+
+    <div class="card">
+        <h2>Status</h2>
+        <span class="online">Online</span>
+    </div>
+
+</main>
+
+<section class="grafico-container">
+    <h3 id="grafico-titulo">CPU (%) — últimos 5 min</h3>
+    <canvas id="grafico-canvas" width="900" height="260"></canvas>
+</section>
+
+<footer>
+
+    Atualização automática a cada 5 segundos — clique em um card para ver o histórico
+
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
