@@ -37,3 +37,4 @@ build/
 .env.properties
 .DS_Store
 firebase-service-account.json
+*firebase-admin*.json
