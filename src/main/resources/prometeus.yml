@@ -1,0 +1,6 @@
+scrape_configs:
+  - job_name: 'nexus-auth'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:8080'
