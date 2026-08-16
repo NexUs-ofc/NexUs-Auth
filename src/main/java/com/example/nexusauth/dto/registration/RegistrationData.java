@@ -1,6 +1,10 @@
-package com.example.nexusauth.model;
+package com.example.nexusauth.dto.registration;
 
 import java.util.List;
+
+import com.example.nexusauth.model.AddressData;
+import com.example.nexusauth.model.AuthProvider;
+import com.example.nexusauth.model.ProfileType;
 
 public record RegistrationData(
         ProfileType type,
