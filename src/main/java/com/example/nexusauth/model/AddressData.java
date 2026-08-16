@@ -1,3 +1,24 @@
 package com.example.nexusauth.model;
 
-public record AddressData(String neighborhood, String street, String number, String cep, String city, String state) {}
+import jakarta.validation.constraints.NotNull;
+
+public record AddressData(
+
+        @NotNull
+        String neighborhood,
+
+        @NotNull
+        String street,
+
+        @NotNull
+        String number,
+
+        @NotNull
+        String cep,
+
+        @NotNull
+        String city,
+
+        @NotNull
+        String state
+) {}

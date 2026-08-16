@@ -34,7 +34,7 @@ build/
 
 ### Project
 .env
-.env.properties
+src/main/resources/.env.properties
 .DS_Store
 firebase-service-account.json
 *firebase-admin*.json
