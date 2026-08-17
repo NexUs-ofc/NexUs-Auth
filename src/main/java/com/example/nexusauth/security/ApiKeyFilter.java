@@ -42,7 +42,8 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                         || path.startsWith("/v3/api-docs")
                         || path.startsWith("/actuator/prometheus")
                         || path.startsWith("/tracing")
-                        || path.startsWith("/static");
+                        || path.startsWith("/static")
+                        || path.equals("/render/health");
 
         logger.info("Ignorar filtro: {}", ignorar);
 

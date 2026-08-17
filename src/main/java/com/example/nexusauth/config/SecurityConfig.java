@@ -95,7 +95,8 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/prometheus",
                                 "/tracing",
-                                "/tracing/**"
+                                "/tracing/**",
+                                "/render/health"
                         ).permitAll()
 
                         // Aqui exige JWT
