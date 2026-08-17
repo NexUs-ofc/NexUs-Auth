@@ -1,11 +1,11 @@
 package com.example.nexusauth.service;
 
+import com.example.nexusauth.dto.registration.RegistrationData;
 import com.example.nexusauth.model.Address;
 import com.example.nexusauth.model.AuthMethod;
 import com.example.nexusauth.model.Company;
 import com.example.nexusauth.model.Profile;
 import com.example.nexusauth.model.ProfileType;
-import com.example.nexusauth.model.RegistrationData;
 import com.example.nexusauth.repository.AddressRepository;
 import com.example.nexusauth.repository.AuthMethodRepository;
 import com.example.nexusauth.repository.CompanyRepository;
@@ -62,7 +62,9 @@ public class RegistrationPersistenceService {
         );
 
         Address address =
-                addresses.save(
+                data.address() == null
+                        ? null
+                        : addresses.save(
                         new Address(
                                 data.address()
                         )

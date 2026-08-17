@@ -1,7 +1,10 @@
 package com.example.nexusauth.service;
 
 import com.example.nexusauth.config.AuthProperties;
-import com.example.nexusauth.model.RegistrationData;
+import com.example.nexusauth.dto.registration.RegistrationData;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.UUID;

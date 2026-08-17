@@ -16,8 +16,8 @@ public record PasswordRegistrationStartRequest(
         @NotBlank @Email @Size(max = 255) String email,
         @NotBlank @Size(min = 8, max = 72) String password,
         @NotBlank @Size(max = 150) String name,
-        @NotEmpty List<@Pattern(regexp = "\\+[1-9][0-9]{7,14}") String> phones,
-        @NotNull @Valid AddressRequest address,
+        List<@Pattern(regexp = "\\+[1-9][0-9]{7,14}") String> phones,
+        @Valid AddressRequest address,
         @Size(max = 500) String profileImageUrl,
         @Pattern(regexp = "\\d{14}") String cnpj,
         Long planId

@@ -14,8 +14,8 @@ public record FirebaseRegistrationStartRequest(
         @NotBlank String firebaseTicket,
         @NotNull ProfileType type,
         @Size(max = 150) String name,
-        @NotEmpty List<@Pattern(regexp = "\\+[1-9][0-9]{7,14}") String> phones,
-        @NotNull @Valid AddressRequest address,
+        List<@Pattern(regexp = "\\+[1-9][0-9]{7,14}") String> phones,
+        @Valid AddressRequest address,
         @Pattern(regexp = "\\d{14}") String cnpj,
         Long planId
 ) {}
