@@ -40,10 +40,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         boolean ignorar =
                 path.startsWith("/swagger-ui")
                         || path.startsWith("/v3/api-docs")
-                        || path.startsWith("/actuator/prometheus")
+                        || path.startsWith("/actuator/")
                         || path.startsWith("/tracing")
-                        || path.startsWith("/static")
-                        || path.equals("/render/health");
+                        || path.startsWith("/static");
 
         logger.info("Ignorar filtro: {}", ignorar);
 

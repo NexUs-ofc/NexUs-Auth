@@ -92,11 +92,9 @@ public class SecurityConfig {
                                 "/api/auth/firebase/**",
                                 "/api/auth/token/refresh",
                                 "/api/auth/password/**",
-                                "/actuator/health",
-                                "/actuator/prometheus",
+                                "/actuator/**",
                                 "/tracing",
-                                "/tracing/**",
-                                "/render/health"
+                                "/tracing/**"
                         ).permitAll()
 
                         // Aqui exige JWT
