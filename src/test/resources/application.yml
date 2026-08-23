@@ -28,3 +28,5 @@ app:
     credentials-path: ""
   mail:
     from: no-reply@example.com
+    from-name: NexUs Test
+    brevo-api-key: test-api-key
