@@ -1,5 +1,6 @@
 package com.example.nexusauth.service;
 
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,6 +25,7 @@ public class OtpMailService {
     private final String from;
     private final String fromName;
 
+    @Autowired
     public OtpMailService(ObjectMapper mapper,
                           @Value("${app.mail.brevo-api-key}") String apiKey,
                           @Value("${app.mail.from}") String from,
