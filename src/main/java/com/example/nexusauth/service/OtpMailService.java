@@ -1,6 +1,6 @@
 package com.example.nexusauth.service;
 
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
