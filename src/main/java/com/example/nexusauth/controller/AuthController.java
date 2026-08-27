@@ -58,16 +58,6 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/registrations/password/verify")
-    public SessionResponse verifyPasswordRegistration(@RequestBody @Valid VerifyOtpRequest request) {
-
-        logger.info("Verificação de duas etapas para cadastro realizada");
-
-        return sessionResponse(
-                auth.verifyRegistration(request.registrationId(), request.otp())
-        );
-    }
-
     @PostMapping("/login/password")
     public SessionResponse passwordLogin(@RequestBody @Valid PasswordLoginRequest request) {
 
@@ -105,10 +95,10 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/registrations/firebase/verify")
+    @PostMapping("/registrations/verify")
     public SessionResponse verifyFirebaseRegistration(@RequestBody @Valid VerifyOtpRequest request) {
 
-        logger.info("Verificação de duas etapas para cadastro por firebase realizada!");
+        logger.info("Verificação de duas etapas para cadastro realizada!");
 
         return sessionResponse(
                 auth.verifyRegistration(request.registrationId(), request.otp())
