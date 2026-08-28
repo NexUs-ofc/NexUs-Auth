@@ -55,7 +55,7 @@ public class Profile {
 
     @ElementCollection
     @CollectionTable(name = "profile_phone", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "phone", nullable = false, length = 16)
+    @Column(name = "phone", nullable = true, length = 16)
     private Set<String> phones = new LinkedHashSet<>();
 
     protected Profile() {}
@@ -68,7 +68,9 @@ public class Profile {
         this.type = type;
         this.profileImageUrl = profileImageUrl;
         this.status = ProfileStatus.ACTIVE;
-        this.phones.addAll(phones);
+        if (phones != null) {
+            this.phones.addAll(phones);
+        }
     }
 
     public Profile(long id, String email, String name, ProfileType type, ProfileStatus status) {
