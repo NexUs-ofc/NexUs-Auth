@@ -3,9 +3,6 @@ package com.example.nexusauth.config;
 import com.example.nexusauth.security.ApiKeyFilter;
 import com.example.nexusauth.security.JwtBlacklistValidator;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import java.util.Base64;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,6 +21,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 
 @Configuration
 @EnableMethodSecurity
@@ -31,7 +31,10 @@ public class SecurityConfig {
     @Bean
     SecretKey jwtSecret(AuthProperties properties) {
         byte[] decoded = Base64.getDecoder().decode(properties.jwtSecretBase64());
-        if (decoded.length < 32) throw new IllegalStateException("JWT_SECRET_BASE64 deve representar ao menos 32 bytes");
+        if (decoded.length < 32) {
+            throw new IllegalStateException(
+                    "JWT_SECRET_BASE64 deve representar ao menos 32 bytes");
+        }
         return new SecretKeySpec(decoded, "HmacSHA256");
     }
 

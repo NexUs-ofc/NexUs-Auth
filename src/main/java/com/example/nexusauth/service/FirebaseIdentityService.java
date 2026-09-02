@@ -4,11 +4,11 @@ import com.example.nexusauth.model.AuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import java.util.Map;
 
 @Service
 public class FirebaseIdentityService {
@@ -60,7 +60,8 @@ public class FirebaseIdentityService {
                     !token.isEmailVerified()) {
 
                 logger.warn(
-                        "Token Firebase rejeitado por email ausente ou não verificado uid={} emailPresente={} emailVerificado={}",
+                        "Token Firebase rejeitado por email ausente ou não verificado uid={}"
+                                + " emailPresente={} emailVerificado={}",
                         token.getUid(),
                         token.getEmail() != null,
                         token.isEmailVerified()

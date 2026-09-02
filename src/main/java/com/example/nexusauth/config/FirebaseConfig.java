@@ -4,11 +4,11 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import java.io.FileInputStream;
-import java.io.IOException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
@@ -16,7 +16,9 @@ public class FirebaseConfig {
     @ConditionalOnProperty(name = "app.firebase.enabled", havingValue = "true")
     FirebaseAuth firebaseAuth(org.springframework.core.env.Environment environment) throws IOException {
         String path = environment.getRequiredProperty("app.firebase.credentials-path");
-        if (path.isBlank()) throw new IllegalStateException("FIREBASE_CREDENTIALS_PATH não configurado");
+        if (path.isBlank()) {
+            throw new IllegalStateException("FIREBASE_CREDENTIALS_PATH não configurado");
+        }
         try (FileInputStream credentials = new FileInputStream(path)) {
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(credentials)).build();

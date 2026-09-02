@@ -1,6 +1,10 @@
 package com.example.nexusauth.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,10 +13,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class OtpMailService {
@@ -79,7 +79,11 @@ public class OtpMailService {
     private record Recipient(String email) {}
 
     public static class EmailDeliveryException extends RuntimeException {
-        EmailDeliveryException() { super("Não foi possível enviar o código por e-mail"); }
-        EmailDeliveryException(Throwable cause) { super("Não foi possível enviar o código por e-mail", cause); }
+        EmailDeliveryException() {
+            super("Não foi possível enviar o código por e-mail");
+        }
+        EmailDeliveryException(Throwable cause) {
+            super("Não foi possível enviar o código por e-mail", cause);
+        }
     }
 }

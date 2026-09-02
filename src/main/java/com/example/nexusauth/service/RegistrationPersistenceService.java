@@ -117,7 +117,8 @@ public class RegistrationPersistenceService {
         if (data.type() == ProfileType.COMPANY) {
 
             logger.debug(
-                    "Cadastro identificado como COMPANY; persistindo dados da empresa profileId={} planId={} cnpjPresente={}",
+                    "Cadastro identificado como COMPANY; persistindo dados da empresa profileId={}"
+                            + " planId={} cnpjPresente={}",
                     profile.id(),
                     data.planId(),
                     data.cnpj() != null

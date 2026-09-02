@@ -2,14 +2,14 @@ package com.example.nexusauth.security;
 
 import com.example.nexusauth.config.AuthProperties;
 import com.example.nexusauth.model.Profile;
-import java.time.Instant;
-import java.util.UUID;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class JwtTokenService {

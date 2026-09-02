@@ -1,14 +1,14 @@
 package com.example.nexusauth.dto.registration;
 
-import java.util.List;
-
 import com.example.nexusauth.annotations.TelephoneList;
 import com.example.nexusauth.model.AddressData;
 import com.example.nexusauth.model.AuthProvider;
 import com.example.nexusauth.model.ProfileType;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.UUID;
 import org.hibernate.validator.constraints.br.CNPJ;
+import java.util.List;
 
 public record RegistrationData(
         @NotNull
