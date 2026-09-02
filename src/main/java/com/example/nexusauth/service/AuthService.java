@@ -3,12 +3,12 @@ package com.example.nexusauth.service;
 import com.example.nexusauth.dto.address.AddressRequest;
 import com.example.nexusauth.dto.auth.FirebaseAuthenticateRequest;
 import com.example.nexusauth.dto.auth.FirebaseAuthenticateResponse;
+import com.example.nexusauth.dto.password.PasswordLoginRequest;
+import com.example.nexusauth.dto.password.ResetPasswordRequest;
 import com.example.nexusauth.dto.registration.FirebaseRegistrationRequiredResponse;
 import com.example.nexusauth.dto.registration.FirebaseRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.RegistrationData;
-import com.example.nexusauth.dto.password.PasswordLoginRequest;
-import com.example.nexusauth.dto.password.ResetPasswordRequest;
 import com.example.nexusauth.dto.session.SessionResponse;
 import com.example.nexusauth.model.AddressData;
 import com.example.nexusauth.model.AuthMethod;
@@ -21,14 +21,14 @@ import com.example.nexusauth.repository.AuthMethodRepository;
 import com.example.nexusauth.repository.CompanyRepository;
 import com.example.nexusauth.repository.PlanRepository;
 import com.example.nexusauth.repository.ProfileRepository;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -96,7 +96,8 @@ public class AuthService {
 
         RegistrationData data = pendingFlows.verifyRegistration(registrationId, otp);
 
-        logger.debug("Dados do cadastro recuperados com sucesso registrationId={} provider={}", registrationId, data.provider());
+        logger.debug("Dados do cadastro recuperados com sucesso registrationId={} provider={}",
+                registrationId, data.provider());
 
         ensureEmailAvailable(data.email());
         validateCompany(data.type(), data.cnpj(), data.planId());
@@ -150,7 +151,8 @@ public class AuthService {
 
         return authMethods.findByProviderAndCredential(identity.provider(), identity.uid())
                 .map(method -> {
-                    logger.debug("Método de autenticação encontrado para identidade Firebase profileId={} provider={}", method.profileId(), identity.provider());
+                    logger.debug("Método de autenticação encontrado para identidade Firebase profileId={}"
+                            + " provider={}", method.profileId(), identity.provider());
 
                     Profile profile = profiles.findById(method.profileId())
                             .orElseThrow(InvalidCredentialsException::new);
@@ -166,15 +168,18 @@ public class AuthService {
                             session.refreshTokenExpiresAt()
                     );
 
-                    logger.info("Login através do Firebase realizado com sucesso profileId={} provider={} channel={}", profile.id(), identity.provider(), request.channel());
+                    logger.info("Login através do Firebase realizado com sucesso profileId={} provider={}"
+                            + " channel={}", profile.id(), identity.provider(), request.channel());
 
                     return new FirebaseAuthenticateResponse(false, response, null);
                 })
                 .orElseGet(() -> {
-                    logger.debug("Identidade Firebase não possui método de autenticação vinculado provider={} email={}", identity.provider(), identity.email());
+                    logger.debug("Identidade Firebase não possui método de autenticação vinculado provider={}"
+                            + " email={}", identity.provider(), identity.email());
 
                     if (profiles.findByEmailIgnoreCase(identity.email()).isPresent()) {
-                        logger.warn("Identidade Firebase pertence a um email já cadastrado, mas não está vinculada provider={}", identity.provider());
+                        logger.warn("Identidade Firebase pertence a um email já cadastrado,"
+                                + " mas não está vinculada provider={}", identity.provider());
                         throw new AccountRequiresLinkException();
                     }
 
@@ -199,7 +204,8 @@ public class AuthService {
 
         FirebaseIdentityService.Identity identity = pendingFlows.getFirebaseTicket(request.firebaseTicket());
 
-        logger.debug("Identidade Firebase recuperada do ticket provider={} email={}", identity.provider(), identity.email());
+        logger.debug("Identidade Firebase recuperada do ticket provider={} email={}",
+                identity.provider(), identity.email());
 
         validatePublicType(request.type());
         ensureEmailAvailable(identity.email());
@@ -207,8 +213,9 @@ public class AuthService {
 
         String name = request.name() == null || request.name().isBlank() ? identity.name() : request.name();
 
-        if (name == null || name.isBlank())
+        if (name == null || name.isBlank()) {
             throw new InvalidRegistrationException("Nome é obrigatório");
+        }
 
         RegistrationData data = new RegistrationData(
                 request.type(),
@@ -227,7 +234,8 @@ public class AuthService {
 
         pendingFlows.deleteFirebaseTicket(request.firebaseTicket());
 
-        logger.info("Cadastro Firebase iniciado com sucesso email={} provider={}", identity.email(), identity.provider());
+        logger.info("Cadastro Firebase iniciado com sucesso email={} provider={}",
+                identity.email(), identity.provider());
 
         return registrationId;
     }
@@ -236,7 +244,9 @@ public class AuthService {
         logger.info("Solicitação de recuperação de senha recebida");
 
         return profiles.findByEmailIgnoreCase(email)
-                .filter(profile -> authMethods.findByProfileIdAndProvider(profile.id(), AuthProvider.PASSWORD).isPresent())
+                .filter(profile -> authMethods
+                        .findByProfileIdAndProvider(profile.id(), AuthProvider.PASSWORD)
+                        .isPresent())
                 .map(profile -> {
                     logger.info("Iniciando recuperação de senha para profileId={}", profile.id());
                     return pendingFlows.startPasswordReset(profile.id(), profile.email());
@@ -271,68 +281,82 @@ public class AuthService {
 
         FirebaseIdentityService.Identity identity = firebase.verify(idToken);
 
-        logger.debug("Identidade Firebase validada para vinculação provider={} email={}", identity.provider(), identity.email());
+        logger.debug("Identidade Firebase validada para vinculação provider={} email={}",
+                identity.provider(), identity.email());
 
         Profile profile = profiles.findById(Math.toIntExact(authenticatedProfileId))
                 .orElseThrow(InvalidCredentialsException::new);
 
-        if (profile.status() != ProfileStatus.ACTIVE)
+        if (profile.status() != ProfileStatus.ACTIVE) {
             throw new ProfileUnavailableException();
+        }
 
-        if (!profile.email().equalsIgnoreCase(identity.email()))
+        if (!profile.email().equalsIgnoreCase(identity.email())) {
             throw new EmailMismatchException();
+        }
 
-        if (authMethods.findByProviderAndCredential(identity.provider(), identity.uid()).isPresent())
+        if (authMethods.findByProviderAndCredential(identity.provider(), identity.uid()).isPresent()) {
             throw new IdentityAlreadyLinkedException();
+        }
 
-        if (identity.provider() == AuthProvider.PASSWORD)
+        if (identity.provider() == AuthProvider.PASSWORD) {
             throw new InvalidRegistrationException("Provider deve ser externo");
+        }
 
         authMethods.save(new AuthMethod(profile, identity.provider(), identity.uid()));
 
-        logger.info("Identidade Firebase vinculada com sucesso profileId={} provider={}", authenticatedProfileId, identity.provider());
+        logger.info("Identidade Firebase vinculada com sucesso profileId={} provider={}",
+                authenticatedProfileId, identity.provider());
     }
 
     private void validateLogin(Profile profile, Channel channel) {
         logger.debug("Validando acesso de login profileId={} channel={}", profile.id(), channel);
 
-        if (profile.status() != ProfileStatus.ACTIVE)
+        if (profile.status() != ProfileStatus.ACTIVE) {
             throw new ProfileUnavailableException();
+        }
 
         boolean allowed = channel == Channel.PLATFORM
                 ? profile.type() == ProfileType.COMPANY || profile.type() == ProfileType.ADMIN
                 : profile.type() == ProfileType.COMPANY || profile.type() == ProfileType.HOUSEHOLD;
 
-        if (!allowed)
+        if (!allowed) {
             throw new ChannelForbiddenException();
+        }
     }
 
     private void validatePublicType(ProfileType type) {
         logger.debug("Validando tipo de perfil para cadastro type={}", type);
 
-        if (type != ProfileType.HOUSEHOLD && type != ProfileType.COMPANY)
+        if (type != ProfileType.HOUSEHOLD && type != ProfileType.COMPANY) {
             throw new InvalidRegistrationException("Apenas HOUSEHOLD e COMPANY aceitam registro público");
+        }
     }
 
     private void ensureEmailAvailable(String email) {
         logger.debug("Verificando disponibilidade do email");
 
-        if (profiles.findByEmailIgnoreCase(email).isPresent())
+        if (profiles.findByEmailIgnoreCase(email).isPresent()) {
             throw new EmailAlreadyUsedException();
+        }
     }
 
     private void validateCompany(ProfileType type, String cnpj, Long planId) {
-        logger.debug("Validando dados de empresa type={} possuiCnpj={} possuiPlanId={}", type, cnpj != null, planId != null);
+        logger.debug("Validando dados de empresa type={} possuiCnpj={} possuiPlanId={}",
+                type, cnpj != null, planId != null);
 
         if (type == ProfileType.COMPANY) {
-            if (cnpj == null || planId == null)
+            if (cnpj == null || planId == null) {
                 throw new InvalidRegistrationException("CNPJ e plano são obrigatórios");
+            }
 
-            if (companies.existsByCnpj(cnpj))
+            if (companies.existsByCnpj(cnpj)) {
                 throw new CnpjAlreadyUsedException();
+            }
 
-            if (!plans.existsByIdAndActiveTrue(Math.toIntExact(planId)))
+            if (!plans.existsByIdAndActiveTrue(Math.toIntExact(planId))) {
                 throw new InvalidRegistrationException("Plano inválido ou inativo");
+            }
 
         } else if (cnpj != null || planId != null) {
             throw new InvalidRegistrationException("CNPJ e plano só se aplicam a COMPANY");
@@ -345,8 +369,9 @@ public class AuthService {
 
     private AddressData address(ProfileType type, AddressRequest value) {
         if (value == null) {
-            if (type == ProfileType.HOUSEHOLD)
+            if (type == ProfileType.HOUSEHOLD) {
                 throw new InvalidRegistrationException("Endereço é obrigatório para HOUSEHOLD");
+            }
 
             return null;
         }

@@ -1,12 +1,12 @@
 package com.example.nexusauth.service;
 
-import java.time.Duration;
-import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class LogoutService {
@@ -67,7 +67,10 @@ public class LogoutService {
         } else {
 
             logger.debug(
-                    "JWT não foi adicionado à blacklist devido à expiração ou ausência de identificador jwtId={} restanteSegundos={}",
+                    "JWT não foi adicionado à blacklist"
+                            + " devido à expiração ou ausência"
+                            + " de identificador"
+                            + " jwtId={} restanteSegundos={}",
                     jwt.getId(),
                     remaining.getSeconds()
             );

@@ -2,12 +2,6 @@ package com.example.nexusauth.service;
 
 import com.example.nexusauth.config.AuthProperties;
 import com.example.nexusauth.dto.registration.RegistrationData;
-
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-import java.security.SecureRandom;
-import java.time.Duration;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,6 +9,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.util.UUID;
 
 @Service
 public class PendingFlowService {

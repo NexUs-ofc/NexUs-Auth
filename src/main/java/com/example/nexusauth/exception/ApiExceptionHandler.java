@@ -5,14 +5,14 @@ import com.example.nexusauth.service.FirebaseIdentityService;
 import com.example.nexusauth.service.PendingFlowService;
 import com.example.nexusauth.service.RefreshTokenService;
 import com.example.nexusauth.service.SessionService;
-import java.time.Instant;
-import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import java.time.Instant;
+import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
