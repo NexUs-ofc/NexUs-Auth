@@ -92,7 +92,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api/auth/registrations/**",
                                 "/api/auth/login/**",
-                                "/api/auth/firebase/**",
+                                "/api/auth/google/**",
                                 "/api/auth/token/refresh",
                                 "/api/auth/password/**",
                                 "/actuator/**",

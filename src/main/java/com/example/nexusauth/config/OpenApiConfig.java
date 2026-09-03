@@ -19,7 +19,7 @@ public class OpenApiConfig {
                         .title("NexUs Auth API")
                         .version("1.0.0")
                         .description(
-                                "API de autenticação manual e por Firebase do NexUs"
+                                "API de autenticação manual e por Google do NexUs"
                         )
                 )
                 .components(

@@ -8,8 +8,6 @@ mvnw.cmd
 .mvn
 .env
 .env.properties
-firebase-service-account.json
-*-firebase-adminsdk-*.json
 HELP.md
 LICENSE
 *.md

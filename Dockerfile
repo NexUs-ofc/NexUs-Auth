@@ -17,9 +17,6 @@ RUN useradd -r -U appuser
 
 COPY --from=build /build/target/*.jar app.jar
 
-ENV FIREBASE_ENABLED=true \
-    FIREBASE_CREDENTIALS_PATH=/etc/secrets/firebase-adminsdk.json
-
 USER appuser
 EXPOSE 8080
 

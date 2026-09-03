@@ -31,9 +31,8 @@ app:
     refresh-token-ttl: ${REFRESH_TOKEN_TTL:30d}
     registration-ttl: ${REGISTRATION_TTL:15m}
     otp-ttl: ${OTP_TTL:10m}
-  firebase:
-    enabled: ${FIREBASE_ENABLED:false}
-    credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
   mail:
     from: ${MAIL_FROM}
     from-name: ${MAIL_FROM_NAME:NexUs}
