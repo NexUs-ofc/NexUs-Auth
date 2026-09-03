@@ -23,9 +23,8 @@ app:
     refresh-token-ttl: 30d
     registration-ttl: 15m
     otp-ttl: 10m
-  firebase:
-    enabled: false
-    credentials-path: ""
+  google:
+    client-id: ""
   mail:
     from: no-reply@example.com
     from-name: NexUs Test

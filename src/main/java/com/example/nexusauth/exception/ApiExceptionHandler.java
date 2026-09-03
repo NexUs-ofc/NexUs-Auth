@@ -1,7 +1,7 @@
 package com.example.nexusauth.exception;
 
 import com.example.nexusauth.service.AuthService;
-import com.example.nexusauth.service.FirebaseIdentityService;
+import com.example.nexusauth.service.GoogleIdentityService;
 import com.example.nexusauth.service.PendingFlowService;
 import com.example.nexusauth.service.RefreshTokenService;
 import com.example.nexusauth.service.SessionService;
@@ -20,7 +20,7 @@ public class ApiExceptionHandler {
             RefreshTokenService.InvalidRefreshTokenException.class,
             SessionService.InvalidSessionException.class,
             PendingFlowService.InvalidOrExpiredOtpException.class,
-            FirebaseIdentityService.InvalidFirebaseTokenException.class})
+            GoogleIdentityService.InvalidGoogleTokenException.class})
     ResponseEntity<?> unauthorized(RuntimeException exception) {
         return error(HttpStatus.UNAUTHORIZED, "INVALID_AUTHENTICATION", "Credencial inválida ou expirada");
     }
@@ -38,17 +38,16 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({AuthService.InvalidRegistrationException.class, AuthService.EmailMismatchException.class,
-            FirebaseIdentityService.UnverifiedEmailException.class,
-            FirebaseIdentityService.UnsupportedProviderException.class,
+            GoogleIdentityService.UnverifiedEmailException.class,
             PendingFlowService.ExpiredRegistrationException.class})
     ResponseEntity<?> badRequest(RuntimeException exception) {
         String message = exception.getMessage() == null ? "Dados inválidos" : exception.getMessage();
         return error(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", message);
     }
 
-    @ExceptionHandler(FirebaseIdentityService.FirebaseUnavailableException.class)
-    ResponseEntity<?> firebaseUnavailable(RuntimeException exception) {
-        return error(HttpStatus.SERVICE_UNAVAILABLE, "FIREBASE_UNAVAILABLE", "Firebase não configurado");
+    @ExceptionHandler(GoogleIdentityService.GoogleUnavailableException.class)
+    ResponseEntity<?> googleUnavailable(RuntimeException exception) {
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "GOOGLE_AUTH_UNAVAILABLE", "Autenticação Google não configurada");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

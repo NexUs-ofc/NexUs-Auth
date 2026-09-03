@@ -204,7 +204,7 @@ public class PendingFlowService {
     }
 
     public String saveFirebaseTicket(
-            FirebaseIdentityService.Identity identity
+            GoogleIdentityService.Identity identity
     ) {
 
         logger.info(
@@ -231,7 +231,7 @@ public class PendingFlowService {
         return id;
     }
 
-    public FirebaseIdentityService.Identity getFirebaseTicket(
+    public GoogleIdentityService.Identity getFirebaseTicket(
             String id
     ) {
 
@@ -255,10 +255,10 @@ public class PendingFlowService {
             throw new ExpiredRegistrationException();
         }
 
-        FirebaseIdentityService.Identity identity =
+        GoogleIdentityService.Identity identity =
                 fromJson(
                         payload,
-                        FirebaseIdentityService.Identity.class
+                        GoogleIdentityService.Identity.class
                 );
 
         logger.debug(

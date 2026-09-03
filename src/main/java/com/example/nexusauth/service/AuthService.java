@@ -38,7 +38,7 @@ public class AuthService {
     private final ProfileRepository profiles;
     private final AuthMethodRepository authMethods;
     private final PendingFlowService pendingFlows;
-    private final FirebaseIdentityService firebase;
+    private final GoogleIdentityService google;
     private final SessionService sessions;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokens;
@@ -47,14 +47,14 @@ public class AuthService {
     private final PlanRepository plans;
 
     public AuthService(ProfileRepository profiles, AuthMethodRepository authMethods,
-                       PendingFlowService pendingFlows, FirebaseIdentityService firebase,
+                       PendingFlowService pendingFlows, GoogleIdentityService google,
                        SessionService sessions, PasswordEncoder passwordEncoder,
                        RefreshTokenService refreshTokens, RegistrationPersistenceService registrations,
                        CompanyRepository companies, PlanRepository plans) {
         this.profiles = profiles;
         this.authMethods = authMethods;
         this.pendingFlows = pendingFlows;
-        this.firebase = firebase;
+        this.google = google;
         this.sessions = sessions;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokens = refreshTokens;
@@ -145,7 +145,7 @@ public class AuthService {
     public FirebaseAuthenticateResponse firebaseAuthenticate(FirebaseAuthenticateRequest request) {
         logger.info("Iniciando autenticação através do Firebase");
 
-        FirebaseIdentityService.Identity identity = firebase.verify(request.idToken());
+        GoogleIdentityService.Identity identity = google.verify(request.idToken());
 
         logger.debug("Identidade Firebase validada provider={} email={}", identity.provider(), identity.email());
 
@@ -202,7 +202,7 @@ public class AuthService {
     public String startFirebaseRegistration(FirebaseRegistrationStartRequest request) {
         logger.info("Iniciando cadastro através do Firebase");
 
-        FirebaseIdentityService.Identity identity = pendingFlows.getFirebaseTicket(request.firebaseTicket());
+        GoogleIdentityService.Identity identity = pendingFlows.getFirebaseTicket(request.firebaseTicket());
 
         logger.debug("Identidade Firebase recuperada do ticket provider={} email={}",
                 identity.provider(), identity.email());
@@ -279,7 +279,7 @@ public class AuthService {
     public void linkFirebase(long authenticatedProfileId, String idToken) {
         logger.info("Iniciando vinculação de identidade Firebase profileId={}", authenticatedProfileId);
 
-        FirebaseIdentityService.Identity identity = firebase.verify(idToken);
+        GoogleIdentityService.Identity identity = google.verify(idToken);
 
         logger.debug("Identidade Firebase validada para vinculação provider={} email={}",
                 identity.provider(), identity.email());

@@ -27,7 +27,7 @@ class AuthServiceTest {
     private AuthMethodRepository methods;
     private SessionService sessions;
     private PasswordEncoder encoder;
-    private FirebaseIdentityService firebase;
+    private GoogleIdentityService google;
     private AuthService service;
 
     @BeforeEach
@@ -36,9 +36,9 @@ class AuthServiceTest {
         methods = mock(AuthMethodRepository.class);
         sessions = mock(SessionService.class);
         encoder = mock(PasswordEncoder.class);
-        firebase = mock(FirebaseIdentityService.class);
+        google = mock(GoogleIdentityService.class);
         service = new AuthService(profiles, methods, mock(PendingFlowService.class),
-                firebase, sessions, encoder, mock(RefreshTokenService.class),
+                google, sessions, encoder, mock(RefreshTokenService.class),
                 mock(RegistrationPersistenceService.class), mock(CompanyRepository.class), mock(PlanRepository.class));
     }
 
@@ -95,7 +95,7 @@ class AuthServiceTest {
     @Test
     void rejectsProviderLinkForBlockedProfile() {
         Profile profile = new Profile(1, "user@example.com", "User", ProfileType.HOUSEHOLD, ProfileStatus.BLOCKED);
-        when(firebase.verify("firebase-token")).thenReturn(new FirebaseIdentityService.Identity(
+        when(google.verify("firebase-token")).thenReturn(new GoogleIdentityService.Identity(
                 "firebase-uid", "user@example.com", "User", null, AuthProvider.GOOGLE));
         when(profiles.findById(1)).thenReturn(Optional.of(profile));
 
