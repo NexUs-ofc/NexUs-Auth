@@ -1,14 +1,14 @@
 package com.example.nexusauth.controller;
 
-import com.example.nexusauth.dto.auth.FirebaseAuthenticateRequest;
-import com.example.nexusauth.dto.auth.FirebaseAuthenticateResponse;
-import com.example.nexusauth.dto.auth.LinkFirebaseRequest;
+import com.example.nexusauth.dto.auth.GoogleAuthenticateRequest;
+import com.example.nexusauth.dto.auth.GoogleAuthenticateResponse;
+import com.example.nexusauth.dto.auth.LinkGoogleRequest;
 import com.example.nexusauth.dto.otp.VerifyOtpRequest;
 import com.example.nexusauth.dto.password.ForgotPasswordRequest;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.PasswordResetPendingResponse;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
-import com.example.nexusauth.dto.registration.FirebaseRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.GoogleRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PendingResponse;
 import com.example.nexusauth.dto.session.SessionResponse;
@@ -68,13 +68,13 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/firebase/authenticate")
-    public ResponseEntity<FirebaseAuthenticateResponse> firebaseAuthenticate(
-            @RequestBody @Valid FirebaseAuthenticateRequest request) {
+    @PostMapping("/google/authenticate")
+    public ResponseEntity<GoogleAuthenticateResponse> googleAuthenticate(
+            @RequestBody @Valid GoogleAuthenticateRequest request) {
 
-        logger.info("Tentativa de login por autenticação firebase com email");
+        logger.info("Tentativa de login por autenticação Google com email");
 
-        FirebaseAuthenticateResponse response = auth.firebaseAuthenticate(request);
+        GoogleAuthenticateResponse response = auth.googleAuthenticate(request);
 
         return ResponseEntity.status(
                         response.registrationRequired() ? HttpStatus.PRECONDITION_REQUIRED : HttpStatus.OK
@@ -82,21 +82,21 @@ public class AuthController {
                 .body(response);
     }
 
-    @PostMapping("/registrations/firebase/start")
-    public ResponseEntity<PendingResponse> startFirebaseRegistration(
-            @RequestBody @Valid FirebaseRegistrationStartRequest request) {
+    @PostMapping("/registrations/google/start")
+    public ResponseEntity<PendingResponse> startGoogleRegistration(
+            @RequestBody @Valid GoogleRegistrationStartRequest request) {
 
-        logger.info("Tentativa de cadastro pelo ticket", request.firebaseTicket());
+        logger.info("Tentativa de cadastro pelo ticket", request.googleTicket());
 
         return ResponseEntity.accepted().body(
                 new PendingResponse(
-                        auth.startFirebaseRegistration(request)
+                        auth.startGoogleRegistration(request)
                 )
         );
     }
 
     @PostMapping("/registrations/verify")
-    public SessionResponse verifyFirebaseRegistration(@RequestBody @Valid VerifyOtpRequest request) {
+    public SessionResponse verifyGoogleRegistration(@RequestBody @Valid VerifyOtpRequest request) {
 
         logger.info("Verificação de duas etapas para cadastro realizada!");
 
@@ -151,14 +151,14 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/firebase/link")
+    @PostMapping("/google/link")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> linkFirebase(@AuthenticationPrincipal Jwt jwt,
-                                             @RequestBody @Valid LinkFirebaseRequest request) {
+    public ResponseEntity<Void> linkGoogle(@AuthenticationPrincipal Jwt jwt,
+                                             @RequestBody @Valid LinkGoogleRequest request) {
 
-        logger.info("Criação de link firebase para autenticação automática");
+        logger.info("Criação de link Google para autenticação automática");
 
-        auth.linkFirebase(Long.parseLong(jwt.getSubject()), request.idToken());
+        auth.linkGoogle(Long.parseLong(jwt.getSubject()), request.idToken());
         return ResponseEntity.noContent().build();
     }
 

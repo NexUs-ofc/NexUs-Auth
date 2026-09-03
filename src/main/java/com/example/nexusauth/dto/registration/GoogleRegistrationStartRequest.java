@@ -9,8 +9,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
-public record FirebaseRegistrationStartRequest(
-        @NotBlank String firebaseTicket,
+public record GoogleRegistrationStartRequest(
+        @NotBlank String googleTicket,
         @NotNull ProfileType type,
         @Size(max = 150) String name,
         List<@Pattern(regexp = "\\+[1-9][0-9]{7,14}") String> phones,

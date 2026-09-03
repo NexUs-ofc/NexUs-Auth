@@ -1,12 +1,12 @@
 package com.example.nexusauth.service;
 
 import com.example.nexusauth.dto.address.AddressRequest;
-import com.example.nexusauth.dto.auth.FirebaseAuthenticateRequest;
-import com.example.nexusauth.dto.auth.FirebaseAuthenticateResponse;
+import com.example.nexusauth.dto.auth.GoogleAuthenticateRequest;
+import com.example.nexusauth.dto.auth.GoogleAuthenticateResponse;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
-import com.example.nexusauth.dto.registration.FirebaseRegistrationRequiredResponse;
-import com.example.nexusauth.dto.registration.FirebaseRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.GoogleRegistrationRequiredResponse;
+import com.example.nexusauth.dto.registration.GoogleRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.RegistrationData;
 import com.example.nexusauth.dto.session.SessionResponse;
@@ -142,16 +142,16 @@ public class AuthService {
         return session;
     }
 
-    public FirebaseAuthenticateResponse firebaseAuthenticate(FirebaseAuthenticateRequest request) {
-        logger.info("Iniciando autenticação através do Firebase");
+    public GoogleAuthenticateResponse googleAuthenticate(GoogleAuthenticateRequest request) {
+        logger.info("Iniciando autenticação através do Google");
 
         GoogleIdentityService.Identity identity = google.verify(request.idToken());
 
-        logger.debug("Identidade Firebase validada provider={} email={}", identity.provider(), identity.email());
+        logger.debug("Identidade Google validada provider={} email={}", identity.provider(), identity.email());
 
         return authMethods.findByProviderAndCredential(identity.provider(), identity.uid())
                 .map(method -> {
-                    logger.debug("Método de autenticação encontrado para identidade Firebase profileId={}"
+                    logger.debug("Método de autenticação encontrado para identidade Google profileId={}"
                             + " provider={}", method.profileId(), identity.provider());
 
                     Profile profile = profiles.findById(method.profileId())
@@ -168,26 +168,26 @@ public class AuthService {
                             session.refreshTokenExpiresAt()
                     );
 
-                    logger.info("Login através do Firebase realizado com sucesso profileId={} provider={}"
+                    logger.info("Login através do Google realizado com sucesso profileId={} provider={}"
                             + " channel={}", profile.id(), identity.provider(), request.channel());
 
-                    return new FirebaseAuthenticateResponse(false, response, null);
+                    return new GoogleAuthenticateResponse(false, response, null);
                 })
                 .orElseGet(() -> {
-                    logger.debug("Identidade Firebase não possui método de autenticação vinculado provider={}"
+                    logger.debug("Identidade Google não possui método de autenticação vinculado provider={}"
                             + " email={}", identity.provider(), identity.email());
 
                     if (profiles.findByEmailIgnoreCase(identity.email()).isPresent()) {
-                        logger.warn("Identidade Firebase pertence a um email já cadastrado,"
+                        logger.warn("Identidade Google pertence a um email já cadastrado,"
                                 + " mas não está vinculada provider={}", identity.provider());
                         throw new AccountRequiresLinkException();
                     }
 
-                    String ticket = pendingFlows.saveFirebaseTicket(identity);
+                    String ticket = pendingFlows.saveGoogleTicket(identity);
 
-                    logger.info("Ticket Firebase criado para início de cadastro provider={}", identity.provider());
+                    logger.info("Ticket Google criado para início de cadastro provider={}", identity.provider());
 
-                    var registration = new FirebaseRegistrationRequiredResponse(
+                    var registration = new GoogleRegistrationRequiredResponse(
                             ticket,
                             identity.email(),
                             identity.name(),
@@ -195,16 +195,16 @@ public class AuthService {
                             List.of("type", "phones", "address", "cnpj/company", "planId/company")
                     );
 
-                    return new FirebaseAuthenticateResponse(true, null, registration);
+                    return new GoogleAuthenticateResponse(true, null, registration);
                 });
     }
 
-    public String startFirebaseRegistration(FirebaseRegistrationStartRequest request) {
-        logger.info("Iniciando cadastro através do Firebase");
+    public String startGoogleRegistration(GoogleRegistrationStartRequest request) {
+        logger.info("Iniciando cadastro através do Google");
 
-        GoogleIdentityService.Identity identity = pendingFlows.getFirebaseTicket(request.firebaseTicket());
+        GoogleIdentityService.Identity identity = pendingFlows.getGoogleTicket(request.googleTicket());
 
-        logger.debug("Identidade Firebase recuperada do ticket provider={} email={}",
+        logger.debug("Identidade Google recuperada do ticket provider={} email={}",
                 identity.provider(), identity.email());
 
         validatePublicType(request.type());
@@ -232,9 +232,9 @@ public class AuthService {
 
         String registrationId = pendingFlows.startRegistration(data);
 
-        pendingFlows.deleteFirebaseTicket(request.firebaseTicket());
+        pendingFlows.deleteGoogleTicket(request.googleTicket());
 
-        logger.info("Cadastro Firebase iniciado com sucesso email={} provider={}",
+        logger.info("Cadastro Google iniciado com sucesso email={} provider={}",
                 identity.email(), identity.provider());
 
         return registrationId;
@@ -276,12 +276,12 @@ public class AuthService {
     }
 
     @Transactional
-    public void linkFirebase(long authenticatedProfileId, String idToken) {
-        logger.info("Iniciando vinculação de identidade Firebase profileId={}", authenticatedProfileId);
+    public void linkGoogle(long authenticatedProfileId, String idToken) {
+        logger.info("Iniciando vinculação de identidade Google profileId={}", authenticatedProfileId);
 
         GoogleIdentityService.Identity identity = google.verify(idToken);
 
-        logger.debug("Identidade Firebase validada para vinculação provider={} email={}",
+        logger.debug("Identidade Google validada para vinculação provider={} email={}",
                 identity.provider(), identity.email());
 
         Profile profile = profiles.findById(Math.toIntExact(authenticatedProfileId))
@@ -305,7 +305,7 @@ public class AuthService {
 
         authMethods.save(new AuthMethod(profile, identity.provider(), identity.uid()));
 
-        logger.info("Identidade Firebase vinculada com sucesso profileId={} provider={}",
+        logger.info("Identidade Google vinculada com sucesso profileId={} provider={}",
                 authenticatedProfileId, identity.provider());
     }
 

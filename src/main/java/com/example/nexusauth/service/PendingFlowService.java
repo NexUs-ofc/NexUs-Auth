@@ -203,12 +203,12 @@ public class PendingFlowService {
         );
     }
 
-    public String saveFirebaseTicket(
+    public String saveGoogleTicket(
             GoogleIdentityService.Identity identity
     ) {
 
         logger.info(
-                "Armazenando ticket de cadastro Firebase email={} provider={}",
+                "Armazenando ticket de cadastro Google email={} provider={}",
                 identity.email(),
                 identity.provider()
         );
@@ -217,13 +217,13 @@ public class PendingFlowService {
                 UUID.randomUUID().toString();
 
         redis.opsForValue().set(
-                firebaseKey(id),
+                googleKey(id),
                 json(identity),
                 properties.registrationTtl()
         );
 
         logger.debug(
-                "Ticket Firebase armazenado com sucesso firebaseTicket={} ttl={} segundos",
+                "Ticket Google armazenado com sucesso googleTicket={} ttl={} segundos",
                 id,
                 properties.registrationTtl().getSeconds()
         );
@@ -231,24 +231,24 @@ public class PendingFlowService {
         return id;
     }
 
-    public GoogleIdentityService.Identity getFirebaseTicket(
+    public GoogleIdentityService.Identity getGoogleTicket(
             String id
     ) {
 
         logger.info(
-                "Consultando ticket de cadastro Firebase firebaseTicket={}",
+                "Consultando ticket de cadastro Google googleTicket={}",
                 id
         );
 
         String payload =
                 redis.opsForValue().get(
-                        firebaseKey(id)
+                        googleKey(id)
                 );
 
         if (payload == null) {
 
             logger.warn(
-                    "Ticket de cadastro Firebase não encontrado ou expirado firebaseTicket={}",
+                    "Ticket de cadastro Google não encontrado ou expirado googleTicket={}",
                     id
             );
 
@@ -262,7 +262,7 @@ public class PendingFlowService {
                 );
 
         logger.debug(
-                "Ticket Firebase recuperado com sucesso firebaseTicket={} email={} provider={}",
+                "Ticket Google recuperado com sucesso googleTicket={} email={} provider={}",
                 id,
                 identity.email(),
                 identity.provider()
@@ -271,21 +271,21 @@ public class PendingFlowService {
         return identity;
     }
 
-    public void deleteFirebaseTicket(
+    public void deleteGoogleTicket(
             String id
     ) {
 
         logger.info(
-                "Removendo ticket de cadastro Firebase firebaseTicket={}",
+                "Removendo ticket de cadastro Google googleTicket={}",
                 id
         );
 
         redis.delete(
-                firebaseKey(id)
+                googleKey(id)
         );
 
         logger.debug(
-                "Ticket Firebase removido do Redis firebaseTicket={}",
+                "Ticket Google removido do Redis googleTicket={}",
                 id
         );
     }
@@ -518,10 +518,10 @@ public class PendingFlowService {
         return "auth:registration:" + id;
     }
 
-    private String firebaseKey(
+    private String googleKey(
             String id
     ) {
-        return "auth:firebase-ticket:" + id;
+        return "auth:google-ticket:" + id;
     }
 
     private String resetKey(

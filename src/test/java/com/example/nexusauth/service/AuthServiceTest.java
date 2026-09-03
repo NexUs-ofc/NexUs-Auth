@@ -95,11 +95,11 @@ class AuthServiceTest {
     @Test
     void rejectsProviderLinkForBlockedProfile() {
         Profile profile = new Profile(1, "user@example.com", "User", ProfileType.HOUSEHOLD, ProfileStatus.BLOCKED);
-        when(google.verify("firebase-token")).thenReturn(new GoogleIdentityService.Identity(
-                "firebase-uid", "user@example.com", "User", null, AuthProvider.GOOGLE));
+        when(google.verify("google-token")).thenReturn(new GoogleIdentityService.Identity(
+                "google-uid", "user@example.com", "User", null, AuthProvider.GOOGLE));
         when(profiles.findById(1)).thenReturn(Optional.of(profile));
 
-        assertThatThrownBy(() -> service.linkFirebase(1, "firebase-token"))
+        assertThatThrownBy(() -> service.linkGoogle(1, "google-token"))
                 .isInstanceOf(AuthService.ProfileUnavailableException.class);
     }
 }
