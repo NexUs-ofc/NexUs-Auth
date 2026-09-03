@@ -36,5 +36,3 @@ build/
 .env
 src/main/resources/.env.properties
 .DS_Store
-firebase-service-account.json
-*firebase-admin*.json
