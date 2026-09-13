@@ -16,8 +16,6 @@ spring:
         enabled: ${REDIS_SSL:false}
       repositories:
         enabled: false
-  flyway:
-    enabled: true
   jpa:
     hibernate:
       ddl-auto: validate
