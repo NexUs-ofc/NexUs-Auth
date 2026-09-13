@@ -5,6 +5,7 @@ import com.example.nexusauth.dto.auth.GoogleAuthenticateResponse;
 import com.example.nexusauth.dto.auth.LinkGoogleRequest;
 import com.example.nexusauth.dto.otp.VerifyOtpRequest;
 import com.example.nexusauth.dto.password.ForgotPasswordRequest;
+import com.example.nexusauth.dto.password.LinkPasswordRequest;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.PasswordResetPendingResponse;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
@@ -156,6 +157,17 @@ public class AuthController {
         logger.info("Criação de link Google para autenticação automática");
 
         auth.linkGoogle(Long.parseLong(jwt.getSubject()), request.idToken());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password/link")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> linkPassword(@AuthenticationPrincipal Jwt jwt,
+                                              @RequestBody @Valid LinkPasswordRequest request) {
+
+        logger.info("Criação de link de senha para autenticação por email e senha");
+
+        auth.linkPassword(Long.parseLong(jwt.getSubject()), request.newPassword());
         return ResponseEntity.noContent().build();
     }
 

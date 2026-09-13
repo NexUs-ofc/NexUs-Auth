@@ -31,7 +31,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler({AuthService.EmailAlreadyUsedException.class, AuthService.CnpjAlreadyUsedException.class,
-            AuthService.AccountRequiresLinkException.class, AuthService.IdentityAlreadyLinkedException.class,
+            AuthService.IdentityAlreadyLinkedException.class,
             DataIntegrityViolationException.class})
     ResponseEntity<?> conflict(Exception exception) {
         return error(HttpStatus.CONFLICT, "RESOURCE_CONFLICT", "E-mail, CNPJ ou identidade já está em uso");
