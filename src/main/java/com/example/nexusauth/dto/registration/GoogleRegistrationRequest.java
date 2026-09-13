@@ -6,13 +6,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import java.util.List;
 
-public record GoogleRegistrationStartRequest(
+public record GoogleRegistrationRequest(
         @NotBlank String googleTicket,
         @NotNull ProfileType type,
-        @Size(max = 150) String name,
         List<@Pattern(regexp = "\\+[1-9][0-9]{7,14}") String> phones,
         @Valid AddressRequest address,
         @Pattern(regexp = "\\d{14}") String cnpj,

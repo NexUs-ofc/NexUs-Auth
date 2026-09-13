@@ -5,8 +5,8 @@ import com.example.nexusauth.dto.auth.GoogleAuthenticateRequest;
 import com.example.nexusauth.dto.auth.GoogleAuthenticateResponse;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.registration.GoogleRegistrationRequest;
 import com.example.nexusauth.dto.registration.GoogleRegistrationRequiredResponse;
-import com.example.nexusauth.dto.registration.GoogleRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.RegistrationData;
 import com.example.nexusauth.dto.session.SessionResponse;
@@ -199,7 +199,8 @@ public class AuthService {
                 });
     }
 
-    public String startGoogleRegistration(GoogleRegistrationStartRequest request) {
+    @Transactional
+    public SessionService.Session registerGoogle(GoogleRegistrationRequest request) {
         logger.info("Iniciando cadastro através do Google");
 
         GoogleIdentityService.Identity identity = pendingFlows.getGoogleTicket(request.googleTicket());
@@ -211,16 +212,14 @@ public class AuthService {
         ensureEmailAvailable(identity.email());
         validateCompany(request.type(), request.cnpj(), request.planId());
 
-        String name = request.name() == null || request.name().isBlank() ? identity.name() : request.name();
-
-        if (name == null || name.isBlank()) {
-            throw new InvalidRegistrationException("Nome é obrigatório");
+        if (identity.name() == null || identity.name().isBlank()) {
+            throw new InvalidRegistrationException("Conta Google sem nome disponível para cadastro");
         }
 
         RegistrationData data = new RegistrationData(
                 request.type(),
                 normalizeEmail(identity.email()),
-                name,
+                identity.name(),
                 request.phones(),
                 address(request.type(), request.address()),
                 identity.picture(),
@@ -230,14 +229,16 @@ public class AuthService {
                 identity.uid()
         );
 
-        String registrationId = pendingFlows.startRegistration(data);
+        Profile profile = registrations.create(data);
 
         pendingFlows.deleteGoogleTicket(request.googleTicket());
 
-        logger.info("Cadastro Google iniciado com sucesso email={} provider={}",
-                identity.email(), identity.provider());
+        SessionService.Session session = sessions.issue(profile);
 
-        return registrationId;
+        logger.info("Cadastro Google concluído com sucesso profileId={} provider={}",
+                profile.id(), identity.provider());
+
+        return session;
     }
 
     public String startPasswordReset(String email) {
