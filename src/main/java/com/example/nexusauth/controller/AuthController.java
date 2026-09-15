@@ -10,6 +10,7 @@ import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.PasswordResetPendingResponse;
 import com.example.nexusauth.dto.password.PasswordResetTicketResponse;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.password.VerifyPasswordResetRequest;
 import com.example.nexusauth.dto.registration.GoogleRegistrationRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PendingResponse;
