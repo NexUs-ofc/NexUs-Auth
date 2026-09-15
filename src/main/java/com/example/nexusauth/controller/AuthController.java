@@ -7,7 +7,9 @@ import com.example.nexusauth.dto.otp.VerifyOtpRequest;
 import com.example.nexusauth.dto.password.ForgotPasswordRequest;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.PasswordResetPendingResponse;
+import com.example.nexusauth.dto.password.PasswordResetTicketResponse;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.password.VerifyPasswordResetRequest;
 import com.example.nexusauth.dto.registration.GoogleRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PendingResponse;
@@ -142,10 +144,22 @@ public class AuthController {
                 ));
     }
 
+    @PostMapping("/password/reset/verify")
+    public ResponseEntity<PasswordResetTicketResponse> verifyPasswordReset(
+            @RequestBody @Valid VerifyPasswordResetRequest request) {
+
+        logger.info("Verificação de OTP para recuperação de senha resetId={}", request.resetId());
+
+        return ResponseEntity.ok(
+                new PasswordResetTicketResponse(
+                        auth.verifyPasswordReset(request.resetId(), request.otp())
+                ));
+    }
+
     @PostMapping("/password/reset")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
 
-        logger.info("Atualização de senha com concluída!", request.resetId());
+        logger.info("Atualização de senha concluída com sucesso");
 
         auth.resetPassword(request);
         return ResponseEntity.noContent().build();
