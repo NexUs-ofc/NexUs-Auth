@@ -5,8 +5,6 @@ spring:
     url: jdbc:postgresql://localhost:1/nexus_auth_test
     username: test
     password: test
-  flyway:
-    enabled: false
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false

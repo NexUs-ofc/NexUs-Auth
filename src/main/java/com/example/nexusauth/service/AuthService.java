@@ -275,11 +275,21 @@ public class AuthService {
                 });
     }
 
+    public String verifyPasswordReset(String resetId, String otp) {
+        logger.info("Iniciando verificação de OTP para recuperação de senha");
+
+        String resetTicket = pendingFlows.verifyPasswordReset(resetId, otp);
+
+        logger.info("OTP de recuperação de senha validado com sucesso");
+
+        return resetTicket;
+    }
+
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         logger.info("Iniciando redefinição de senha");
 
-        long profileId = pendingFlows.verifyPasswordReset(request.resetId(), request.otp());
+        long profileId = pendingFlows.consumePasswordResetTicket(request.resetTicket());
 
         logger.debug("Processo de recuperação de senha validado profileId={}", profileId);
 

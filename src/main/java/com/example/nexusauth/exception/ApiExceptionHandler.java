@@ -20,6 +20,7 @@ public class ApiExceptionHandler {
             RefreshTokenService.InvalidRefreshTokenException.class,
             SessionService.InvalidSessionException.class,
             PendingFlowService.InvalidOrExpiredOtpException.class,
+            PendingFlowService.InvalidOrExpiredResetTicketException.class,
             GoogleIdentityService.InvalidGoogleTokenException.class})
     ResponseEntity<?> unauthorized(RuntimeException exception) {
         return error(HttpStatus.UNAUTHORIZED, "INVALID_AUTHENTICATION", "Credencial inválida ou expirada");

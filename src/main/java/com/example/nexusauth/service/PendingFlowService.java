@@ -19,6 +19,8 @@ public class PendingFlowService {
     private static final Logger logger =
             LoggerFactory.getLogger(PendingFlowService.class);
 
+    private static final Duration RESET_TICKET_TTL = Duration.ofMinutes(5);
+
     private final StringRedisTemplate redis;
     private final ObjectMapper mapper;
     private final PasswordEncoder encoder;
@@ -342,7 +344,7 @@ public class PendingFlowService {
         return id;
     }
 
-    public long verifyPasswordReset(
+    public String verifyPasswordReset(
             String id,
             String otp
     ) {
@@ -429,13 +431,56 @@ public class PendingFlowService {
                 attemptsKey
         );
 
+        String ticket =
+                UUID.randomUUID().toString();
+
+        redis.opsForValue().set(
+                resetTicketKey(ticket),
+                String.valueOf(pending.profileId()),
+                RESET_TICKET_TTL
+        );
+
         logger.info(
                 "Recuperação de senha validada com sucesso resetId={} profileId={}",
                 id,
                 pending.profileId()
         );
 
-        return pending.profileId();
+        return ticket;
+    }
+
+    public long consumePasswordResetTicket(
+            String ticket
+    ) {
+
+        logger.info(
+                "Consumindo ticket de redefinição de senha"
+        );
+
+        String profileId =
+                redis.opsForValue().get(
+                        resetTicketKey(ticket)
+                );
+
+        if (profileId == null) {
+
+            logger.warn(
+                    "Ticket de redefinição de senha não encontrado ou expirado"
+            );
+
+            throw new InvalidOrExpiredResetTicketException();
+        }
+
+        redis.delete(
+                resetTicketKey(ticket)
+        );
+
+        logger.info(
+                "Ticket de redefinição de senha consumido com sucesso profileId={}",
+                profileId
+        );
+
+        return Long.parseLong(profileId);
     }
 
     private int incrementAttempts(
@@ -530,6 +575,12 @@ public class PendingFlowService {
         return "auth:password-reset:" + id;
     }
 
+    private String resetTicketKey(
+            String id
+    ) {
+        return "auth:password-reset-ticket:" + id;
+    }
+
     private record PendingRegistration(
             RegistrationData data,
             String otpHash
@@ -541,6 +592,9 @@ public class PendingFlowService {
     ) {}
 
     public static class InvalidOrExpiredOtpException
+            extends RuntimeException {}
+
+    public static class InvalidOrExpiredResetTicketException
             extends RuntimeException {}
 
     public static class ExpiredRegistrationException
