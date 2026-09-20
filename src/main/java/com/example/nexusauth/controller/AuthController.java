@@ -5,12 +5,13 @@ import com.example.nexusauth.dto.auth.GoogleAuthenticateResponse;
 import com.example.nexusauth.dto.auth.LinkGoogleRequest;
 import com.example.nexusauth.dto.otp.VerifyOtpRequest;
 import com.example.nexusauth.dto.password.ForgotPasswordRequest;
+import com.example.nexusauth.dto.password.LinkPasswordRequest;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.PasswordResetPendingResponse;
 import com.example.nexusauth.dto.password.PasswordResetTicketResponse;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
 import com.example.nexusauth.dto.password.VerifyPasswordResetRequest;
-import com.example.nexusauth.dto.registration.GoogleRegistrationStartRequest;
+import com.example.nexusauth.dto.registration.GoogleRegistrationRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PendingResponse;
 import com.example.nexusauth.dto.session.SessionResponse;
@@ -84,16 +85,13 @@ public class AuthController {
                 .body(response);
     }
 
-    @PostMapping("/registrations/google/start")
-    public ResponseEntity<PendingResponse> startGoogleRegistration(
-            @RequestBody @Valid GoogleRegistrationStartRequest request) {
+    @PostMapping("/registrations/google")
+    public SessionResponse registerGoogle(@RequestBody @Valid GoogleRegistrationRequest request) {
 
-        logger.info("Tentativa de cadastro pelo ticket", request.googleTicket());
+        logger.info("Tentativa de cadastro através do Google");
 
-        return ResponseEntity.accepted().body(
-                new PendingResponse(
-                        auth.startGoogleRegistration(request)
-                )
+        return sessionResponse(
+                auth.registerGoogle(request)
         );
     }
 
@@ -173,6 +171,17 @@ public class AuthController {
         logger.info("Criação de link Google para autenticação automática");
 
         auth.linkGoogle(Long.parseLong(jwt.getSubject()), request.idToken());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password/link")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> linkPassword(@AuthenticationPrincipal Jwt jwt,
+                                              @RequestBody @Valid LinkPasswordRequest request) {
+
+        logger.info("Criação de link de senha para autenticação por email e senha");
+
+        auth.linkPassword(Long.parseLong(jwt.getSubject()), request.newPassword());
         return ResponseEntity.noContent().build();
     }
 

@@ -5,8 +5,8 @@ import com.example.nexusauth.dto.auth.GoogleAuthenticateRequest;
 import com.example.nexusauth.dto.auth.GoogleAuthenticateResponse;
 import com.example.nexusauth.dto.password.PasswordLoginRequest;
 import com.example.nexusauth.dto.password.ResetPasswordRequest;
+import com.example.nexusauth.dto.registration.GoogleRegistrationRequest;
 import com.example.nexusauth.dto.registration.GoogleRegistrationRequiredResponse;
-import com.example.nexusauth.dto.registration.GoogleRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.dto.registration.RegistrationData;
 import com.example.nexusauth.dto.session.SessionResponse;
@@ -177,29 +177,50 @@ public class AuthService {
                     logger.debug("Identidade Google não possui método de autenticação vinculado provider={}"
                             + " email={}", identity.provider(), identity.email());
 
-                    if (profiles.findByEmailIgnoreCase(identity.email()).isPresent()) {
-                        logger.warn("Identidade Google pertence a um email já cadastrado,"
-                                + " mas não está vinculada provider={}", identity.provider());
-                        throw new AccountRequiresLinkException();
-                    }
+                    return profiles.findByEmailIgnoreCase(identity.email())
+                            .map(profile -> {
+                                logger.info("Email já cadastrado por outro método; vinculando Google"
+                                        + " automaticamente profileId={}", profile.id());
 
-                    String ticket = pendingFlows.saveGoogleTicket(identity);
+                                authMethods.save(new AuthMethod(profile, identity.provider(), identity.uid()));
 
-                    logger.info("Ticket Google criado para início de cadastro provider={}", identity.provider());
+                                validateLogin(profile, request.channel());
 
-                    var registration = new GoogleRegistrationRequiredResponse(
-                            ticket,
-                            identity.email(),
-                            identity.name(),
-                            identity.picture(),
-                            List.of("type", "phones", "address", "cnpj/company", "planId/company")
-                    );
+                                SessionService.Session session = sessions.issue(profile);
 
-                    return new GoogleAuthenticateResponse(true, null, registration);
+                                SessionResponse response = new SessionResponse(
+                                        session.accessToken(),
+                                        session.accessTokenExpiresAt(),
+                                        session.refreshToken(),
+                                        session.refreshTokenExpiresAt()
+                                );
+
+                                logger.info("Login através do Google realizado com sucesso após vinculação"
+                                        + " automática profileId={} channel={}", profile.id(), request.channel());
+
+                                return new GoogleAuthenticateResponse(false, response, null);
+                            })
+                            .orElseGet(() -> {
+                                String ticket = pendingFlows.saveGoogleTicket(identity);
+
+                                logger.info("Ticket Google criado para início de cadastro provider={}",
+                                        identity.provider());
+
+                                var registration = new GoogleRegistrationRequiredResponse(
+                                        ticket,
+                                        identity.email(),
+                                        identity.name(),
+                                        identity.picture(),
+                                        List.of("type", "phones", "address", "cnpj/company", "planId/company")
+                                );
+
+                                return new GoogleAuthenticateResponse(true, null, registration);
+                            });
                 });
     }
 
-    public String startGoogleRegistration(GoogleRegistrationStartRequest request) {
+    @Transactional
+    public SessionService.Session registerGoogle(GoogleRegistrationRequest request) {
         logger.info("Iniciando cadastro através do Google");
 
         GoogleIdentityService.Identity identity = pendingFlows.getGoogleTicket(request.googleTicket());
@@ -211,16 +232,14 @@ public class AuthService {
         ensureEmailAvailable(identity.email());
         validateCompany(request.type(), request.cnpj(), request.planId());
 
-        String name = request.name() == null || request.name().isBlank() ? identity.name() : request.name();
-
-        if (name == null || name.isBlank()) {
-            throw new InvalidRegistrationException("Nome é obrigatório");
+        if (identity.name() == null || identity.name().isBlank()) {
+            throw new InvalidRegistrationException("Conta Google sem nome disponível para cadastro");
         }
 
         RegistrationData data = new RegistrationData(
                 request.type(),
                 normalizeEmail(identity.email()),
-                name,
+                identity.name(),
                 request.phones(),
                 address(request.type(), request.address()),
                 identity.picture(),
@@ -230,23 +249,22 @@ public class AuthService {
                 identity.uid()
         );
 
-        String registrationId = pendingFlows.startRegistration(data);
+        Profile profile = registrations.create(data);
 
         pendingFlows.deleteGoogleTicket(request.googleTicket());
 
-        logger.info("Cadastro Google iniciado com sucesso email={} provider={}",
-                identity.email(), identity.provider());
+        SessionService.Session session = sessions.issue(profile);
 
-        return registrationId;
+        logger.info("Cadastro Google concluído com sucesso profileId={} provider={}",
+                profile.id(), identity.provider());
+
+        return session;
     }
 
     public String startPasswordReset(String email) {
         logger.info("Solicitação de recuperação de senha recebida");
 
         return profiles.findByEmailIgnoreCase(email)
-                .filter(profile -> authMethods
-                        .findByProfileIdAndProvider(profile.id(), AuthProvider.PASSWORD)
-                        .isPresent())
                 .map(profile -> {
                     logger.info("Iniciando recuperação de senha para profileId={}", profile.id());
                     return pendingFlows.startPasswordReset(profile.id(), profile.email());
@@ -275,14 +293,37 @@ public class AuthService {
 
         logger.debug("Processo de recuperação de senha validado profileId={}", profileId);
 
-        AuthMethod password = authMethods.findByProfileIdAndProvider(Math.toIntExact(profileId), AuthProvider.PASSWORD)
-                .orElseThrow(() -> new IllegalStateException("Perfil não possui autenticação por senha"));
+        String encoded = passwordEncoder.encode(request.newPassword());
 
-        password.updateCredential(passwordEncoder.encode(request.newPassword()));
+        authMethods.findByProfileIdAndProvider(Math.toIntExact(profileId), AuthProvider.PASSWORD)
+                .ifPresentOrElse(
+                        password -> password.updateCredential(encoded),
+                        () -> authMethods.save(new AuthMethod(profileId, AuthProvider.PASSWORD, encoded))
+                );
 
         refreshTokens.revokeAll(profileId);
 
         logger.info("Senha redefinida com sucesso e sessões revogadas profileId={}", profileId);
+    }
+
+    @Transactional
+    public void linkPassword(long authenticatedProfileId, String newPassword) {
+        logger.info("Iniciando vinculação de senha profileId={}", authenticatedProfileId);
+
+        Profile profile = profiles.findById(Math.toIntExact(authenticatedProfileId))
+                .orElseThrow(InvalidCredentialsException::new);
+
+        if (profile.status() != ProfileStatus.ACTIVE) {
+            throw new ProfileUnavailableException();
+        }
+
+        if (authMethods.findByProfileIdAndProvider(profile.id(), AuthProvider.PASSWORD).isPresent()) {
+            throw new IdentityAlreadyLinkedException();
+        }
+
+        authMethods.save(new AuthMethod(profile, AuthProvider.PASSWORD, passwordEncoder.encode(newPassword)));
+
+        logger.info("Senha vinculada com sucesso profileId={}", authenticatedProfileId);
     }
 
     @Transactional
@@ -401,8 +442,6 @@ public class AuthService {
     public static class EmailAlreadyUsedException extends RuntimeException {}
 
     public static class CnpjAlreadyUsedException extends RuntimeException {}
-
-    public static class AccountRequiresLinkException extends RuntimeException {}
 
     public static class ProfileUnavailableException extends RuntimeException {}
 
