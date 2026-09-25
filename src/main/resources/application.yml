@@ -16,6 +16,8 @@ spring:
         enabled: ${REDIS_SSL:false}
       repositories:
         enabled: false
+  main:
+    lazy-initialization: true
   jpa:
     hibernate:
       ddl-auto: validate
