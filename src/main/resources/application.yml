@@ -7,6 +7,10 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:3}
+      minimum-idle: ${DB_POOL_MIN_IDLE:1}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT_MS:20000}
   data:
     redis:
       host: ${REDIS_HOST}
@@ -19,6 +23,7 @@ spring:
   main:
     lazy-initialization: true
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
