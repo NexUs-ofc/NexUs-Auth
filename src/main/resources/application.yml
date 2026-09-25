@@ -30,7 +30,7 @@ app:
     registration-ttl: ${REGISTRATION_TTL:15m}
     otp-ttl: ${OTP_TTL:10m}
   google:
-    client-id: ${GOOGLE_CLIENT_ID:}
+    client-ids: ${GOOGLE_WEB_CLIENT_ID:},${GOOGLE_ANDROID_CLIENT_ID:}
   mail:
     from: ${MAIL_FROM}
     from-name: ${MAIL_FROM_NAME:NexUs}
