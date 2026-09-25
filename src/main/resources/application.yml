@@ -19,6 +19,7 @@ spring:
   main:
     lazy-initialization: true
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
