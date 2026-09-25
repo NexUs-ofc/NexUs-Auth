@@ -22,7 +22,7 @@ app:
     registration-ttl: 15m
     otp-ttl: 10m
   google:
-    client-id: ""
+    client-ids: ""
   mail:
     from: no-reply@example.com
     from-name: NexUs Test
