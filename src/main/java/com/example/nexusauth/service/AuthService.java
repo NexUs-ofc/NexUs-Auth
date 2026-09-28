@@ -420,8 +420,8 @@ public class AuthService {
 
     private AddressData address(ProfileType type, AddressRequest value) {
         if (value == null) {
-            if (type == ProfileType.HOUSEHOLD) {
-                throw new InvalidRegistrationException("Endereço é obrigatório para HOUSEHOLD");
+            if (type == ProfileType.HOUSEHOLD || type == ProfileType.STORE) {
+                throw new InvalidRegistrationException("Endereço é obrigatório para HOUSEHOLD e para STORE");
             }
 
             return null;
