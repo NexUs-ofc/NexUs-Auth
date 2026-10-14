@@ -39,18 +39,11 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        logger.info("URI: {} (Should Not Filter)", path);
-
-        boolean ignorar =
-                path.startsWith("/swagger-ui")
-                        || path.startsWith("/v3/api-docs")
-                        || path.startsWith("/actuator/")
-                        || path.startsWith("/tracing")
-                        || path.startsWith("/static");
-
-        logger.info("Ignorar filtro: {}", ignorar);
-
-        return ignorar;
+        return path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/actuator/")
+                || path.startsWith("/tracing")
+                || path.startsWith("/static");
     }
 
     @Override
