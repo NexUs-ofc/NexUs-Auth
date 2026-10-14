@@ -142,6 +142,7 @@ public class AuthService {
         return session;
     }
 
+    @Transactional
     public GoogleAuthenticateResponse googleAuthenticate(GoogleAuthenticateRequest request) {
         logger.info("Iniciando autenticação através do Google");
 
