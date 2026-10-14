@@ -21,7 +21,7 @@ spec:
       containers:
         - name: nexus-auth
           image: 516615386106.dkr.ecr.us-east-1.amazonaws.com/ceris/nexus-auth:v1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
