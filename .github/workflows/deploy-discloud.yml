@@ -1,6 +1,9 @@
 name: Deploy to Discloud
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -38,6 +41,9 @@ jobs:
           ls -lh app.jar
 
       - name: Deploy to Discloud
+        # Upload real só acontece após o merge (push na main).
+        # Na PR, o job valida todo o resto e o status bloqueia o merge se falhar.
+        if: github.event_name != 'pull_request'
         uses: discloud/deploy-action@v1
         with:
           token: ${{ secrets.DISCLOUD_TOKEN }}
