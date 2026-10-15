@@ -1,0 +1,52 @@
+name: Deploy to Discloud
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Discloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Grant execute permission for mvnw
+        run: chmod +x mvnw
+
+      - name: Build executable JAR
+        run: ./mvnw clean package -DskipTests
+
+      - name: Rename JAR to app.jar
+        run: |
+          JAR=$(ls target/*.jar | grep -v -e sources -e javadoc -e original | head -n 1)
+          cp "$JAR" app.jar
+          ls -lh app.jar
+
+      - name: Deploy to Discloud
+        # Upload real só acontece após o merge (push na main).
+        # Na PR, o job valida todo o resto e o status bloqueia o merge se falhar.
+        if: github.event_name != 'pull_request'
+        uses: discloud/deploy-action@v1
+        with:
+          token: ${{ secrets.DISCLOUD_TOKEN }}
+          glob: |
+            app.jar
+            discloud.config
