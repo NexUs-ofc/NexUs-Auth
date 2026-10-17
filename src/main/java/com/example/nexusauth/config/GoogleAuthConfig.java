@@ -44,7 +44,7 @@ public class GoogleAuthConfig {
                 .build();
     }
 
-    static List<String> audiences(String clientIds) {
+    public static List<String> audiences(String clientIds) {
 
         if (clientIds == null || clientIds.isBlank()) {
             return List.of();
