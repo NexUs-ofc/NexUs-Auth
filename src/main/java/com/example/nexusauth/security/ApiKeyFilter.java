@@ -42,8 +42,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         return path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/actuator/")
-                || path.startsWith("/tracing")
-                || path.startsWith("/static");
+                || path.startsWith("/admin/");
     }
 
     @Override
