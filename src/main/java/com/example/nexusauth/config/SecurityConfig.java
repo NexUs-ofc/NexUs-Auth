@@ -103,9 +103,7 @@ public class SecurityConfig {
                                 "/api/auth/google/**",
                                 "/api/auth/token/refresh",
                                 "/api/auth/password/**",
-                                "/actuator/**",
-                                "/tracing",
-                                "/tracing/**"
+                                "/actuator/**"
                         ).permitAll()
 
                         // Aqui exige JWT

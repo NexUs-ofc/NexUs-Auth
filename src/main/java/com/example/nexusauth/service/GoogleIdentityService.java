@@ -6,9 +6,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 @Service
 public class GoogleIdentityService {
@@ -18,10 +20,14 @@ public class GoogleIdentityService {
 
     private final ObjectProvider<GoogleIdTokenVerifier> googleIdTokenVerifier;
 
+    private final List<String> audiences;
+
     public GoogleIdentityService(
-            ObjectProvider<GoogleIdTokenVerifier> googleIdTokenVerifier
+            ObjectProvider<GoogleIdTokenVerifier> googleIdTokenVerifier,
+            @Value("${app.google.client-ids:}") String clientIds
     ) {
         this.googleIdTokenVerifier = googleIdTokenVerifier;
+        this.audiences = com.example.nexusauth.config.GoogleAuthConfig.audiences(clientIds);
     }
 
     public Identity verify(String idToken) {
@@ -65,7 +71,10 @@ public class GoogleIdentityService {
         if (token == null) {
 
             logger.warn(
-                    "Token Google inválido ou expirado"
+                    "Token Google inválido ou expirado. Verifique se o client-ID usado pelo frontend "
+                            + "está configurado em app.google.client-ids (GOOGLE_WEB_CLIENT_ID / "
+                            + "GOOGLE_ANDROID_CLIENT_ID). Audiências configuradas: {}",
+                    audiences
             );
 
             throw new InvalidGoogleTokenException();

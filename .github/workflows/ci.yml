@@ -1,3 +1,4 @@
+
 name: Java CI
 
 on:
@@ -9,8 +10,10 @@ on:
     branches:
       - main
 
-jobs:
+permissions:
+  contents: read
 
+jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -32,7 +35,6 @@ jobs:
       - name: Run unit tests
         run: ./mvnw test
 
-
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -53,7 +55,6 @@ jobs:
 
       - name: Run Checkstyle
         run: ./mvnw checkstyle:check
-
 
   build:
     name: Build

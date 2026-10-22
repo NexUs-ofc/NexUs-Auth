@@ -1,6 +1,9 @@
 scrape_configs:
   - job_name: 'nexus-auth'
     metrics_path: '/actuator/prometheus'
+    # Mesma chave do painel do administrador (ADMIN_API_KEY).
+    params:
+      key: ['TROQUE_PELA_ADMIN_API_KEY']
     static_configs:
       - targets:
           - 'localhost:8080'
