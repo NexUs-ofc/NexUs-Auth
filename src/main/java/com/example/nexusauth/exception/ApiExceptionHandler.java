@@ -1,5 +1,6 @@
 package com.example.nexusauth.exception;
 
+import com.example.nexusauth.geo.GeocodingUnavailableException;
 import com.example.nexusauth.service.AuthService;
 import com.example.nexusauth.service.GoogleIdentityService;
 import com.example.nexusauth.service.PendingFlowService;
@@ -49,6 +50,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(GoogleIdentityService.GoogleUnavailableException.class)
     ResponseEntity<?> googleUnavailable(RuntimeException exception) {
         return error(HttpStatus.SERVICE_UNAVAILABLE, "GOOGLE_AUTH_UNAVAILABLE", "Autenticação Google não configurada");
+    }
+
+    @ExceptionHandler(GeocodingUnavailableException.class)
+    ResponseEntity<?> geocodingUnavailable(GeocodingUnavailableException exception) {
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "GEOCODING_UNAVAILABLE", exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
