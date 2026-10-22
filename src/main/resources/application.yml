@@ -29,6 +29,9 @@ spring:
     open-in-view: false
 
 app:
+  geocoding:
+    base-url: ${GEOCODING_BASE_URL:https://nominatim.openstreetmap.org}
+    user-agent: ${GEOCODING_USER_AGENT:NexUs-Auth/1.0}
   auth:
     issuer: ${JWT_ISSUER:nexus-auth}
     jwt-secret-base64: ${JWT_SECRET_BASE64}
