@@ -14,6 +14,8 @@ spring:
       hibernate.boot.allow_jdbc_metadata_access: false
 
 app:
+  geocoding:
+    api-key: test-geocoding-key
   auth:
     issuer: nexus-auth-test
     jwt-secret-base64: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=

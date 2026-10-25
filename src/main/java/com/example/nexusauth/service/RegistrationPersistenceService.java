@@ -42,7 +42,7 @@ public class RegistrationPersistenceService {
         if (data.address() == null && data.type() != ProfileType.COMPANY) {
             throw new AuthService.InvalidRegistrationException("Endereco e obrigatorio para este tipo de perfil");
         }
-        Address address = data.address() == null ? null : saveAddress(data.address());
+        Address address = data.address() == null ? null : saveAddress(data.address(), data.type());
         Profile profile = profiles.save(new Profile(address, data.email(), data.name(), data.type(),
                 data.profileImageUrl(), data.phones()));
         authMethods.save(new AuthMethod(profile, data.provider(), data.credential()));
@@ -52,7 +52,10 @@ public class RegistrationPersistenceService {
         return profile;
     }
 
-    private Address saveAddress(AddressData data) {
+    private Address saveAddress(AddressData data, ProfileType type) {
+        if (type == ProfileType.COMPANY) {
+            return addresses.save(new Address(data, null, null));
+        }
         GeoPoint point = geocoding.geocode(data)
                 .orElseThrow(() -> new AuthService.InvalidRegistrationException(
                         "Nao foi possivel localizar o endereco informado. Confira os dados do endereco."));
