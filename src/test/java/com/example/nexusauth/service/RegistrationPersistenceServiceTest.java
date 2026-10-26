@@ -71,9 +71,21 @@ class RegistrationPersistenceServiceTest {
 
     @ParameterizedTest
     @EnumSource(AuthProvider.class)
-    void persistsCompanyCoordinatesWhenAddressIsProvided(AuthProvider provider) {
-        assertCoordinatesPersisted(ProfileType.COMPANY, provider);
+    void savesCompanyAddressWithoutCoordinatesOrGeocoding(AuthProvider provider) {
+        when(plans.getReferenceById(1)).thenReturn(mock(Plan.class));
+
+        Profile profile = service.create(registration(ProfileType.COMPANY, provider, ADDRESS));
+
+        ArgumentCaptor<Address> saved = ArgumentCaptor.forClass(Address.class);
+        verify(addresses).save(saved.capture());
+        assertThat(saved.getValue().getLatitude()).isNull();
+        assertThat(saved.getValue().getLongitude()).isNull();
+        assertThat(ReflectionTestUtils.getField(saved.getValue(), "city")).isEqualTo(ADDRESS.city());
+        assertThat(ReflectionTestUtils.getField(saved.getValue(), "street")).isEqualTo(ADDRESS.street());
+        assertThat(ReflectionTestUtils.getField(profile, "address")).isSameAs(saved.getValue());
+        verifyNoInteractions(geocoding);
         verify(companies).save(any(Company.class));
+        verify(methods).save(any(AuthMethod.class));
     }
 
     @ParameterizedTest
