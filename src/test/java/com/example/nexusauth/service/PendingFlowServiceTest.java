@@ -9,6 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.nexusauth.config.AuthProperties;
+import com.example.nexusauth.dto.registration.RegistrationData;
+import com.example.nexusauth.model.AuthProvider;
+import com.example.nexusauth.model.ProfileType;
 import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +26,7 @@ class PendingFlowServiceTest {
     private StringRedisTemplate redis;
     private ValueOperations<String, String> values;
     private PendingFlowService service;
+    private OtpMailService mail;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -33,8 +37,36 @@ class PendingFlowServiceTest {
         AuthProperties properties = new AuthProperties("issuer", "secret",
                 Duration.ofMinutes(15), Duration.ofDays(30),
                 Duration.ofMinutes(15), Duration.ofMinutes(10));
+        mail = mock(OtpMailService.class);
         service = new PendingFlowService(redis, mock(ObjectMapper.class), mock(PasswordEncoder.class),
-                properties, mock(OtpMailService.class));
+                properties, mail);
+    }
+
+    @Test
+    void registrationEmailUsesTheSameValidityAsRedis() {
+        RegistrationData data = new RegistrationData(ProfileType.HOUSEHOLD, "user@example.com", "User",
+                null, null, null, null, null, AuthProvider.PASSWORD, "credential");
+
+        String id = service.startRegistration(data);
+
+        ArgumentCaptor<String> otp = ArgumentCaptor.forClass(String.class);
+        verify(mail).send(eq(data.email()), otp.capture(), eq(OtpMailService.Purpose.REGISTRATION),
+                eq(Duration.ofMinutes(15)));
+        assertThat(otp.getValue()).matches("\\d{6}");
+        verify(values).set(eq("auth:registration:" + id), org.mockito.ArgumentMatchers.isNull(),
+                eq(Duration.ofMinutes(15)));
+    }
+
+    @Test
+    void passwordResetEmailUsesTheSameValidityAsRedis() {
+        String id = service.startPasswordReset(42L, "user@example.com");
+
+        ArgumentCaptor<String> otp = ArgumentCaptor.forClass(String.class);
+        verify(mail).send(eq("user@example.com"), otp.capture(), eq(OtpMailService.Purpose.PASSWORD_RESET),
+                eq(Duration.ofMinutes(10)));
+        assertThat(otp.getValue()).matches("\\d{6}");
+        verify(values).set(eq("auth:password-reset:" + id), org.mockito.ArgumentMatchers.isNull(),
+                eq(Duration.ofMinutes(10)));
     }
 
     @Test
