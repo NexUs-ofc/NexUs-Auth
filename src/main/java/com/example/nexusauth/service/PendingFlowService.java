@@ -73,16 +73,11 @@ public class PendingFlowService {
                 properties.registrationTtl()
         );
 
-        logger.debug(
-                "Cadastro pendente armazenado no Redis registrationId={} ttl={} segundos",
-                id,
-                properties.registrationTtl().getSeconds()
-        );
-
         mail.send(
                 data.email(),
                 otp,
-                "confirmar seu cadastro"
+                OtpMailService.Purpose.REGISTRATION,
+                properties.registrationTtl()
         );
 
         logger.info(
@@ -127,12 +122,6 @@ public class PendingFlowService {
                         attemptsKey,
                         properties.registrationTtl()
                 );
-
-        logger.debug(
-                "Tentativa de verificação de cadastro registrada registrationId={} tentativa={}",
-                id,
-                attempts
-        );
 
         if (attempts > 5) {
 
@@ -199,10 +188,6 @@ public class PendingFlowService {
                 "auth:registration-attempts:" + id
         );
 
-        logger.debug(
-                "Dados de cadastro pendente e tentativas removidos do Redis registrationId={}",
-                id
-        );
     }
 
     public String saveGoogleTicket(
@@ -222,12 +207,6 @@ public class PendingFlowService {
                 googleKey(id),
                 json(identity),
                 properties.registrationTtl()
-        );
-
-        logger.debug(
-                "Ticket Google armazenado com sucesso googleTicket={} ttl={} segundos",
-                id,
-                properties.registrationTtl().getSeconds()
         );
 
         return id;
@@ -263,13 +242,6 @@ public class PendingFlowService {
                         GoogleIdentityService.Identity.class
                 );
 
-        logger.debug(
-                "Ticket Google recuperado com sucesso googleTicket={} email={} provider={}",
-                id,
-                identity.email(),
-                identity.provider()
-        );
-
         return identity;
     }
 
@@ -286,10 +258,6 @@ public class PendingFlowService {
                 googleKey(id)
         );
 
-        logger.debug(
-                "Ticket Google removido do Redis googleTicket={}",
-                id
-        );
     }
 
     public String startPasswordReset(
@@ -322,17 +290,11 @@ public class PendingFlowService {
                 properties.otpTtl()
         );
 
-        logger.debug(
-                "Dados de recuperação de senha armazenados no Redis resetId={} profileId={} ttl={} segundos",
-                id,
-                profileId,
-                properties.otpTtl().getSeconds()
-        );
-
         mail.send(
                 email,
                 otp,
-                "recuperar sua senha"
+                OtpMailService.Purpose.PASSWORD_RESET,
+                properties.otpTtl()
         );
 
         logger.info(
@@ -377,12 +339,6 @@ public class PendingFlowService {
                         attemptsKey,
                         properties.otpTtl()
                 );
-
-        logger.debug(
-                "Tentativa de recuperação de senha registrada resetId={} tentativa={}",
-                id,
-                attempts
-        );
 
         if (attempts > 5) {
 
@@ -500,13 +456,6 @@ public class PendingFlowService {
                 attempts == null
                         ? 1
                         : attempts.intValue();
-
-        logger.debug(
-                "Contador de tentativas atualizado key={} tentativa={} ttl={} segundos",
-                key,
-                currentAttempts,
-                ttl.getSeconds()
-        );
 
         return currentAttempts;
     }
