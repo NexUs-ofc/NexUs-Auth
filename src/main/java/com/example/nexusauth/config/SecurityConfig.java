@@ -1,11 +1,15 @@
 package com.example.nexusauth.config;
 
+import com.example.nexusauth.ratelimit.AuthRateLimitService;
+import com.example.nexusauth.ratelimit.RateLimitConfiguration;
+import com.example.nexusauth.ratelimit.RateLimitFilter;
 import com.example.nexusauth.security.ApiKeyFilter;
 import com.example.nexusauth.security.JwtBlacklistValidator;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -33,6 +37,7 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
+@Import(RateLimitConfiguration.class)
 public class SecurityConfig {
     @Bean
     SecretKey jwtSecret(AuthProperties properties) {
@@ -62,7 +67,8 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtDecoder decoder,
             ApiKeyFilter apiKeyFilter,
-            CorsConfigurationSource corsConfigurationSource
+            CorsConfigurationSource corsConfigurationSource,
+            AuthRateLimitService rateLimits
     ) throws Exception {
 
         JwtGrantedAuthoritiesConverter authorities =
@@ -90,6 +96,8 @@ public class SecurityConfig {
                         apiKeyFilter,
                         BearerTokenAuthenticationFilter.class
                 )
+
+                .addFilterBefore(new RateLimitFilter(rateLimits), BearerTokenAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
 
