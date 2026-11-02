@@ -17,9 +17,11 @@ import com.example.nexusauth.dto.registration.PendingResponse;
 import com.example.nexusauth.dto.session.SessionResponse;
 import com.example.nexusauth.dto.token.LogoutRequest;
 import com.example.nexusauth.dto.token.RefreshRequest;
+import com.example.nexusauth.ratelimit.AuthRateLimitService;
 import com.example.nexusauth.service.AuthService;
 import com.example.nexusauth.service.LogoutService;
 import com.example.nexusauth.service.SessionService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,18 +41,22 @@ public class AuthController {
     private final AuthService auth;
     private final SessionService sessions;
     private final LogoutService logout;
+    private final AuthRateLimitService rateLimits;
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public AuthController(AuthService auth, SessionService sessions, LogoutService logout) {
+    public AuthController(AuthService auth, SessionService sessions, LogoutService logout,
+                          AuthRateLimitService rateLimits) {
         this.auth = auth;
         this.sessions = sessions;
         this.logout = logout;
+        this.rateLimits = rateLimits;
 
     }
 
     @PostMapping("/registrations/password/start")
     public ResponseEntity<PendingResponse> startPasswordRegistration(
             @RequestBody @Valid PasswordRegistrationStartRequest request) {
+        rateLimits.checkOtpSend(request.email());
 
         logger.info("Tentativa de cadastro por {}", request.email());
 
@@ -62,7 +68,9 @@ public class AuthController {
     }
 
     @PostMapping("/login/password")
-    public SessionResponse passwordLogin(@RequestBody @Valid PasswordLoginRequest request) {
+    public SessionResponse passwordLogin(@RequestBody @Valid PasswordLoginRequest request,
+                                         HttpServletRequest servletRequest) {
+        rateLimits.checkLogin(request.email(), servletRequest);
 
         logger.info("Tentativa de login por {} em {}", request.email(), request.channel());
 
@@ -133,6 +141,7 @@ public class AuthController {
     @PostMapping("/password/forgot")
     public ResponseEntity<PasswordResetPendingResponse> forgotPassword(
             @RequestBody @Valid ForgotPasswordRequest request) {
+        rateLimits.checkOtpSend(request.email());
 
         logger.info("Tentativa de recuperação de senha para email", request.email());
 

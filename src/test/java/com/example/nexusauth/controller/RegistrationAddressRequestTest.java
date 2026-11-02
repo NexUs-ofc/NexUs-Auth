@@ -4,6 +4,7 @@ import com.example.nexusauth.dto.address.AddressRequest;
 import com.example.nexusauth.dto.registration.GoogleRegistrationRequest;
 import com.example.nexusauth.dto.registration.PasswordRegistrationStartRequest;
 import com.example.nexusauth.exception.ApiExceptionHandler;
+import com.example.nexusauth.ratelimit.AuthRateLimitService;
 import com.example.nexusauth.service.AuthService;
 import com.example.nexusauth.service.LogoutService;
 import com.example.nexusauth.service.SessionService;
@@ -36,7 +37,7 @@ class RegistrationAddressRequestTest {
     void setUp() {
         auth = mock(AuthService.class);
         mvc = MockMvcBuilders.standaloneSetup(new AuthController(auth, mock(SessionService.class),
-                        mock(LogoutService.class)))
+                        mock(LogoutService.class), mock(AuthRateLimitService.class)))
                 .setControllerAdvice(new ApiExceptionHandler()).build();
     }
 

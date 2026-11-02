@@ -1,6 +1,7 @@
 package com.example.nexusauth.exception;
 
 import com.example.nexusauth.geo.GeocodingUnavailableException;
+import com.example.nexusauth.ratelimit.RateLimitExceededException;
 import com.example.nexusauth.service.AuthService;
 import com.example.nexusauth.service.GoogleIdentityService;
 import com.example.nexusauth.service.PendingFlowService;
@@ -17,6 +18,14 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(RateLimitExceededException.class)
+    ResponseEntity<?> rateLimited(RateLimitExceededException exception) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", Long.toString(exception.retryAfter()))
+                .body(Map.of("code", "RATE_LIMIT_EXCEEDED", "message", exception.getMessage(),
+                        "timestamp", Instant.now().toString()));
+    }
+
     @ExceptionHandler({AuthService.InvalidCredentialsException.class,
             RefreshTokenService.InvalidRefreshTokenException.class,
             SessionService.InvalidSessionException.class,
