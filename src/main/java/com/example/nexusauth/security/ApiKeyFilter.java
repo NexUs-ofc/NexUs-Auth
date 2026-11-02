@@ -1,6 +1,5 @@
 package com.example.nexusauth.security;
 
-import com.example.nexusauth.exception.UnauthorizedException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,13 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class ApiKeyFilter extends OncePerRequestFilter {
@@ -62,18 +58,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                     request.getRequestURI()
             );
 
-            throw new UnauthorizedException("API Key inválida");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
-
-        var authentication = new UsernamePasswordAuthenticationToken(
-                "api-key-client",
-                null,
-                Collections.emptyList()
-        );
-
-        SecurityContextHolder
-                .getContext()
-                .setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
