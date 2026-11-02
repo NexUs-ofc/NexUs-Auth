@@ -21,6 +21,13 @@ import com.example.nexusauth.ratelimit.AuthRateLimitService;
 import com.example.nexusauth.service.AuthService;
 import com.example.nexusauth.service.LogoutService;
 import com.example.nexusauth.service.SessionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -35,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Autenticação")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -53,6 +61,11 @@ public class AuthController {
 
     }
 
+    @Operation(summary = "Iniciar cadastro por senha",
+            description = "Valida os dados e inicia o cadastro com OTP. HOUSEHOLD exige endereço; COMPANY exige "
+                    + "CNPJ e plano.")
+    @ApiResponse(responseCode = "202", description = "Solicitação aceita; verifique o código enviado",
+            content = @Content(schema = @Schema(implementation = PendingResponse.class)))
     @PostMapping("/registrations/password/start")
     public ResponseEntity<PendingResponse> startPasswordRegistration(
             @RequestBody @Valid PasswordRegistrationStartRequest request) {
@@ -67,6 +80,8 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Autenticar por senha",
+            description = "Verifica e-mail, senha e acesso ao canal PLATFORM ou MOBILE e retorna os tokens da sessão.")
     @PostMapping("/login/password")
     public SessionResponse passwordLogin(@RequestBody @Valid PasswordLoginRequest request,
                                          HttpServletRequest servletRequest) {
@@ -79,6 +94,15 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Autenticar com Google",
+            description = "Valida o ID token Google. Uma identidade sem cadastro recebe 428 e dados para "
+                    + "completar o registro.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Identidade reconhecida; sessão emitida",
+                content = @Content(schema = @Schema(implementation = GoogleAuthenticateResponse.class))),
+        @ApiResponse(responseCode = "428", description = "Cadastro necessário; utilize o googleTicket retornado",
+                content = @Content(schema = @Schema(implementation = GoogleAuthenticateResponse.class)))
+    })
     @PostMapping("/google/authenticate")
     public ResponseEntity<GoogleAuthenticateResponse> googleAuthenticate(
             @RequestBody @Valid GoogleAuthenticateRequest request) {
@@ -93,6 +117,8 @@ public class AuthController {
                 .body(response);
     }
 
+    @Operation(summary = "Completar cadastro Google",
+            description = "Conclui o cadastro com o googleTicket e os campos obrigatórios do tipo de perfil.")
     @PostMapping("/registrations/google")
     public SessionResponse registerGoogle(@RequestBody @Valid GoogleRegistrationRequest request) {
 
@@ -103,6 +129,8 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Confirmar cadastro por OTP",
+            description = "Confirma o cadastro pendente pelo registrationId e OTP de seis dígitos e emite a sessão.")
     @PostMapping("/registrations/verify")
     public SessionResponse verifyGoogleRegistration(@RequestBody @Valid VerifyOtpRequest request) {
 
@@ -113,6 +141,8 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Renovar sessão",
+            description = "Recebe o refresh token no corpo e retorna novos tokens conforme a política de renovação.")
     @PostMapping("/token/refresh")
     public SessionResponse refresh(@RequestBody @Valid RefreshRequest request) {
 
@@ -124,10 +154,13 @@ public class AuthController {
         );
     }
 
+    @Operation(summary = "Encerrar sessão",
+            description = "Exige API key e JWT; revoga o refresh token e registra o JWT na blacklist do Auth.")
+    @ApiResponse(responseCode = "204", description = "Operação concluída", content = @Content)
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(
-            @AuthenticationPrincipal Jwt jwt,
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid LogoutRequest request
     ) {
 
@@ -138,6 +171,10 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Iniciar recuperação de senha",
+            description = "Recebe o e-mail e retorna um resetId para a confirmação do OTP.")
+    @ApiResponse(responseCode = "202", description = "Solicitação aceita; verifique o código enviado",
+            content = @Content(schema = @Schema(implementation = PasswordResetPendingResponse.class)))
     @PostMapping("/password/forgot")
     public ResponseEntity<PasswordResetPendingResponse> forgotPassword(
             @RequestBody @Valid ForgotPasswordRequest request) {
@@ -151,6 +188,8 @@ public class AuthController {
                 ));
     }
 
+    @Operation(summary = "Confirmar OTP de recuperação",
+            description = "Recebe resetId e OTP de seis dígitos e retorna um resetTicket para redefinir a senha.")
     @PostMapping("/password/reset/verify")
     public ResponseEntity<PasswordResetTicketResponse> verifyPasswordReset(
             @RequestBody @Valid VerifyPasswordResetRequest request) {
@@ -163,6 +202,9 @@ public class AuthController {
                 ));
     }
 
+    @Operation(summary = "Redefinir senha",
+            description = "Recebe o resetTicket e a nova senha, com tamanho entre 8 e 72 caracteres.")
+    @ApiResponse(responseCode = "204", description = "Operação concluída", content = @Content)
     @PostMapping("/password/reset")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
 
@@ -172,9 +214,13 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Vincular identidade Google",
+            description = "Exige API key e JWT; vincula a identidade do ID token Google ao perfil autenticado.")
+    @ApiResponse(responseCode = "204", description = "Operação concluída", content = @Content)
     @PostMapping("/google/link")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> linkGoogle(@AuthenticationPrincipal Jwt jwt,
+    public ResponseEntity<Void> linkGoogle(
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt,
                                              @RequestBody @Valid LinkGoogleRequest request) {
 
         logger.info("Criação de link Google para autenticação automática");
@@ -183,9 +229,13 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Vincular senha ao perfil",
+            description = "Exige API key e JWT; define uma credencial de senha para o perfil autenticado.")
+    @ApiResponse(responseCode = "204", description = "Operação concluída", content = @Content)
     @PostMapping("/password/link")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> linkPassword(@AuthenticationPrincipal Jwt jwt,
+    public ResponseEntity<Void> linkPassword(
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt,
                                               @RequestBody @Valid LinkPasswordRequest request) {
 
         logger.info("Criação de link de senha para autenticação por email e senha");
