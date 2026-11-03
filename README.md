@@ -1200,10 +1200,10 @@ Em ambientes com proxy, configure `RATE_LIMIT_TRUSTED_PROXIES` conforme os ender
 
 ### Docker
 
-O arquivo disponível é `Dockerfile.vercel`.
+O arquivo disponível é `Dockerfile`.
 
 ```bash
-docker build -f Dockerfile.vercel -t nexus-auth .
+docker build -f Dockerfile -t nexus-auth .
 docker run --rm -p 8080:8080 --env-file /caminho/seguro/auth.env nexus-auth
 ```
 
@@ -1215,12 +1215,12 @@ A imagem utiliza Java 17 e executa com usuário sem privilégios de root.
 
 O manifesto em `k8s/deployment.yaml` declara:
 
-- Duas réplicas.
+- Uma réplica inicial, ajustável conforme a carga.
 - Atualização gradual.
 - Variáveis obtidas de `nexus-auth-secret`.
 - Probes de inicialização, prontidão e vida.
 - Limites de CPU e memória.
-- Service do tipo `LoadBalancer`.
+- Service do tipo `ClusterIP`.
 
 Imagem, namespace, segredos, TLS e conectividade precisam corresponder ao ambiente utilizado.
 
@@ -1293,3 +1293,7 @@ As seguintes limitações são consideradas na operação e evolução do servi�
 Distribuído sob a licença **MIT**, conforme o arquivo `LICENSE`.
 
 Copyright © 2026 NexUs.
+
+## Containers e Kubernetes
+
+Consulte o [guia de containers e Kubernetes](docs/containers.md) para build, configuração e execução em qualquer cluster.

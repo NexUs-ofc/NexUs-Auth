@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /workspace
+COPY pom.xml ./
+RUN mvn --batch-mode --no-transfer-progress dependency:go-offline
+COPY src ./src
+COPY config ./config
+RUN mvn --batch-mode --no-transfer-progress package -DskipTests
+
+FROM eclipse-temurin:17-jre-jammy AS runtime
+RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app
+WORKDIR /app
+COPY --from=build --chown=10001:10001 /workspace/target/*.jar ./app.jar
+ENV PORT=8080
+EXPOSE 8080
+USER 10001:10001
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
